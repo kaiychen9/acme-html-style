@@ -1,0 +1,694 @@
+<!-- Acme HTML Style — Starter Template -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acme — [Document Title]</title>
+<style>
+  /* ==================================================================
+     DESIGN TOKENS — Always start with this :root block verbatim.
+     Copy it exactly. Do not modify hex values.
+     ================================================================== */
+  :root {
+    /* Primary palette */
+    --ivory: #FAF9F5;
+    --slate: #141413;
+    --clay: #D97757;
+    --clay-d: #B85C3E;
+    --oat: #E3DACC;
+    --olive: #788C5D;
+    --rust: #B04A3F;
+    --white: #FFFFFF;
+
+    /* Gray scale */
+    --gray-100: #F0EEE6;
+    --gray-200: #E6E3DA;
+    --gray-300: #D1CFC5;
+    --gray-500: #87867F;
+    --gray-700: #3D3D3A;
+
+    /* Semantic */
+    --success: #788C5D;
+    --warning: #C78E3F;
+    --danger:  #B04A4A;
+    --info:    #5C7CA3;
+
+    /* Typography */
+    --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+    --sans:  system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono:  ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+
+    /* Radius */
+    --radius-xs: 4px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-panel: 12px;
+    --radius-row: 8px;
+    --radius-pill: 999px;
+
+    /* Borders */
+    --border: 1.5px solid var(--gray-300);
+    --border-light: 1px solid var(--gray-100);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(20, 20, 19, 0.06);
+    --shadow-md: 0 4px 10px rgba(20, 20, 19, 0.08);
+    --shadow-lg: 0 12px 28px rgba(20, 20, 19, 0.12);
+  }
+
+  /* ==================================================================
+     RESET & PAGE SHELL
+     ================================================================== */
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 56px 24px 120px;
+    background: var(--ivory);
+    color: var(--slate);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* ==================================================================
+     TYPOGRAPHY
+     ================================================================== */
+
+  /* Heading rules:
+     - h1, h2, h3 always var(--serif), weight 500
+     - letter-spacing: -0.01em to -0.02em for tightness
+     - body text always var(--sans), line-height 1.55-1.6
+     - code, metadata, labels, stat numbers always var(--mono)
+  */
+
+  /* Eyebrow / overline */
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: 18px;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 38px;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 24px;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+  }
+
+  h3 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 18px;
+    margin: 0 0 4px;
+  }
+
+  .sub, .intro, .lead {
+    color: var(--gray-500);
+    font-size: 14px;
+    margin: 0 0 48px;
+  }
+
+  .sub code, .intro code, .lead code {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--gray-100);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  hr.rule {
+    border: none;
+    border-top: 1px solid var(--gray-300);
+    margin: 0 0 22px;
+  }
+
+  /* ==================================================================
+     SECTION BLOCK
+     ================================================================== */
+  section {
+    margin-bottom: 52px;
+  }
+
+  /* ==================================================================
+     CARDS
+     ================================================================== */
+  .card {
+    background: var(--white);
+    border: var(--border);
+    border-radius: var(--radius-panel);
+    padding: 20px 22px;
+    transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--slate);
+  }
+
+  /* Card grid */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(316px, 1fr));
+    gap: 20px;
+  }
+
+  /* ==================================================================
+     BUTTONS
+     ================================================================== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 16px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: var(--radius-row);
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--clay);
+    color: var(--white);
+  }
+  .btn-primary:hover { background: var(--clay-d); }
+
+  .btn-secondary {
+    background: var(--white);
+    color: var(--slate);
+    border-color: var(--gray-300);
+  }
+  .btn-secondary:hover { background: var(--gray-100); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--gray-700);
+    border-color: transparent;
+  }
+  .btn-ghost:hover { background: var(--gray-100); }
+
+  .btn-danger {
+    background: var(--danger);
+    color: var(--white);
+  }
+  .btn-danger:hover { background: #9A3F3F; }
+
+  /* Pill button variant */
+  .btn-pill { border-radius: var(--radius-pill); }
+
+  /* Small button */
+  .btn-sm {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
+    font-family: var(--mono);
+  }
+
+  /* ==================================================================
+     BADGES
+     ================================================================== */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 9px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: var(--radius-pill);
+  }
+
+  .badge-neutral { background: var(--gray-100); color: var(--gray-700); }
+  .badge-accent  { background: rgba(217, 119, 87, 0.14); color: var(--clay); }
+  .badge-success { background: rgba(120, 140, 93, 0.16); color: var(--olive); }
+  .badge-warning { background: rgba(199, 142, 63, 0.16); color: #A06A2A; }
+  .badge-danger  { background: rgba(176, 74, 74, 0.12); color: var(--danger); }
+  .badge-info    { background: rgba(92, 124, 163, 0.14); color: var(--info); }
+
+  /* ==================================================================
+     TAGS / CHIPS
+     ================================================================== */
+  .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    border-radius: var(--radius-xs);
+    background: var(--gray-100);
+    color: var(--gray-700);
+    white-space: nowrap;
+  }
+
+  .tag-accent { background: rgba(217, 119, 87, 0.12); color: var(--clay); }
+  .tag-success { background: rgba(120, 140, 93, 0.14); color: var(--olive); }
+  .tag-warning { background: rgba(199, 142, 63, 0.14); color: #A06A2A; }
+  .tag-danger  { background: rgba(176, 74, 74, 0.12); color: var(--danger); }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--gray-500);
+    background: var(--gray-100);
+    border: var(--border);
+    border-radius: var(--radius-pill);
+    padding: 5px 11px;
+    white-space: nowrap;
+  }
+
+  /* ==================================================================
+     INPUTS & FORMS
+     ================================================================== */
+  .input {
+    height: 38px;
+    padding: 0 12px;
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--slate);
+    background: var(--white);
+    border: var(--border);
+    border-radius: var(--radius-row);
+    outline: none;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+    width: 260px;
+  }
+
+  .input::placeholder { color: var(--gray-500); }
+  .input:focus {
+    border-color: var(--clay);
+    box-shadow: 0 0 0 3px rgba(217, 119, 87, 0.15);
+  }
+
+  /* Checkbox */
+  .checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .checkbox input {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: var(--border);
+    border-radius: 5px;
+    background: var(--white);
+    margin: 0;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.12s ease, border-color 0.12s ease;
+  }
+  .checkbox input:checked {
+    background: var(--clay);
+    border-color: var(--clay);
+  }
+  .checkbox input:checked::after {
+    content: "";
+    position: absolute;
+    left: 5px; top: 1px;
+    width: 5px; height: 10px;
+    border: solid var(--white);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  /* Toggle switch */
+  .toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggle input { display: none; }
+  .toggle .track {
+    width: 40px;
+    height: 22px;
+    background: var(--gray-300);
+    border-radius: var(--radius-pill);
+    position: relative;
+    transition: background 0.12s ease;
+  }
+  .toggle .track::after {
+    content: "";
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 16px; height: 16px;
+    background: var(--white);
+    border-radius: 50%;
+    transition: transform 0.12s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+  .toggle input:checked + .track {
+    background: var(--olive);
+  }
+  .toggle input:checked + .track::after {
+    transform: translateX(18px);
+  }
+
+  /* ==================================================================
+     TABLES
+     ================================================================== */
+  table.panel-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--white);
+    border: var(--border);
+    border-radius: var(--radius-panel);
+    overflow: hidden;
+  }
+
+  table.panel-table thead th {
+    text-align: left;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--gray-500);
+    background: var(--gray-100);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gray-300);
+  }
+
+  table.panel-table tbody td {
+    padding: 13px 16px;
+    border-bottom: var(--border-light);
+    font-size: 14px;
+    vertical-align: middle;
+  }
+
+  table.panel-table tbody tr:last-child td { border-bottom: none; }
+  table.panel-table tbody tr:hover { background: var(--ivory); }
+
+  /* ==================================================================
+     STAT CARDS
+     ================================================================== */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  @media (max-width: 720px) {
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .stat-card {
+    background: var(--white);
+    border: var(--border);
+    border-radius: var(--radius-panel);
+    padding: 20px 22px 18px;
+  }
+
+  .stat-card.warn {
+    border-left: 4px solid var(--clay);
+    padding-left: 19px;
+  }
+
+  .stat-num {
+    font-family: var(--serif);
+    font-size: 44px;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--slate);
+    margin-bottom: 8px;
+  }
+
+  .stat-label {
+    font-family: var(--sans);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray-500);
+  }
+
+  .stat-delta {
+    font-family: var(--mono);
+    font-size: 11px;
+    margin-top: 6px;
+  }
+  .stat-delta.up   { color: var(--olive); }
+  .stat-delta.down { color: var(--clay); }
+  .stat-delta.flat { color: var(--gray-500); }
+
+  /* ==================================================================
+     RISK DOTS
+     ================================================================== */
+  .risk-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: inline-block;
+  }
+  .risk-dot.low  { background: var(--olive); }
+  .risk-dot.med  { background: var(--clay); }
+  .risk-dot.high { background: var(--rust); }
+
+  .risk {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: var(--gray-500);
+  }
+
+  /* ==================================================================
+     HIGHLIGHT LIST
+     ================================================================== */
+  .highlights {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .highlights li {
+    position: relative;
+    padding: 0 0 14px 26px;
+    font-size: 15px;
+    color: var(--gray-700);
+  }
+
+  .highlights li::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 8px;
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    background: var(--clay);
+  }
+
+  .highlights li strong {
+    color: var(--slate);
+    font-weight: 600;
+  }
+
+  /* ==================================================================
+     PANELS (oat background, carryover style)
+     ================================================================== */
+  .panel-oat {
+    background: var(--oat);
+    border-radius: var(--radius-panel);
+    padding: 20px 22px;
+  }
+
+  /* ==================================================================
+     LINKS
+     ================================================================== */
+  a {
+    color: var(--clay);
+    text-decoration-color: var(--oat);
+    text-underline-offset: 3px;
+  }
+  a:hover { text-decoration-color: var(--clay); }
+
+  .mono-link {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--clay);
+    text-decoration: none;
+    border-bottom: 1px dotted transparent;
+  }
+  .mono-link:hover { border-bottom-color: var(--clay); }
+
+  /* ==================================================================
+     DETAILS / SUMMARY (collapsible sections)
+     ================================================================== */
+  details {
+    border: var(--border);
+    border-radius: var(--radius-row);
+    background: var(--white);
+    overflow: hidden;
+  }
+
+  details + details { margin-top: 12px; }
+
+  summary {
+    padding: 14px 18px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--gray-700);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.12s ease;
+  }
+
+  summary::-webkit-details-marker { display: none; }
+  summary::marker { content: none; }
+
+  summary:hover { background: var(--ivory); }
+
+  summary::before {
+    content: "+";
+    font-family: var(--mono);
+    font-size: 16px;
+    color: var(--gray-500);
+    transition: transform 0.15s ease;
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  details[open] summary::before {
+    content: "−";
+    color: var(--clay);
+  }
+
+  details .details-content {
+    padding: 0 18px 18px 44px;
+    font-size: 14px;
+    color: var(--gray-700);
+    line-height: 1.55;
+  }
+
+  /* ==================================================================
+     CODE BLOCKS
+     ================================================================== */
+  pre, code {
+    font-family: var(--mono);
+  }
+
+  pre {
+    background: var(--gray-100);
+    border: var(--border);
+    border-radius: var(--radius-row);
+    padding: 16px 18px;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-x: auto;
+    color: var(--gray-700);
+  }
+
+  code {
+    font-size: 13px;
+    background: var(--gray-100);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--gray-700);
+  }
+
+  /* ==================================================================
+     FOOTER
+     ================================================================== */
+  footer {
+    margin-top: 64px;
+    padding-top: 20px;
+    border-top: 1px solid var(--gray-300);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--gray-500);
+  }
+
+  /* ==================================================================
+     UTILITY
+     ================================================================== */
+  .flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .gap-sm { gap: 8px; }
+  .gap-md { gap: 16px; }
+
+  .text-mono  { font-family: var(--mono); }
+  .text-serif { font-family: var(--serif); }
+  .text-muted { color: var(--gray-500); }
+  .text-small { font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ==================================================================
+       HEADER — Every document starts with an eyebrow, h1, and sub
+       ================================================================== -->
+  <header>
+    <div class="eyebrow">Category label</div>
+    <h1>Document Title</h1>
+    <p class="sub">
+      A brief description of what this document covers. Keep it to 1-2 sentences.
+      Use <code>inline code</code> for file paths or technical terms.
+    </p>
+  </header>
+
+  <!-- ==================================================================
+       SECTION — h2 + hr.rule + content
+       ================================================================== -->
+  <section>
+    <h2>Section heading</h2>
+    <hr class="rule">
+    <!-- Content goes here -->
+  </section>
+
+  <!-- ==================================================================
+       FOOTER — mono font, gray-500, sources/metadata
+       ================================================================== -->
+  <footer>
+    Sources: [list data sources] &middot; generated [date]
+  </footer>
+
+</div>
+</body>
+</html>
