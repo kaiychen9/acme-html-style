@@ -41,9 +41,19 @@ LLM 自己也能生成 HTML，但产出的风格通常千篇一律——紫色�
 **方式 B — 从源码安装**
 
 ```bash
-git clone https://github.com/ThariqS/html-effectiveness.git
-cp -r html-effectiveness/acme-html-style ~/.claude/skills/acme-html-style
+git clone https://github.com/kaiychen9/acme-html-style.git
+cp -r acme-html-style ~/.claude/skills/acme-html-style
 ```
+
+**方式 C — 通过 Agent 安装**
+
+直接告诉你的 AI agent 来安装这个技能：
+
+> "帮我安装 acme-html-style 技能，仓库地址是 https://github.com/kaiychen9/acme-html-style"
+
+在 Claude Code 中，你也可以使用 `/install` 命令或说：
+
+> "帮我找到并安装 acme-html-style 这个技能，用来生成温暖编辑风的 HTML 文档"
 
 ### 触发方式
 
@@ -70,6 +80,10 @@ cp -r html-effectiveness/acme-html-style ~/.claude/skills/acme-html-style
 - **字体层级分明。** 衬线用于标题（庄重感），无衬线用于正文（可读性），等宽用于代码/数据（精确感）。
 - **暖色调。** 象牙白页面底色，陶土色点缀，橄榄绿表示成功。没有刺眼的饱和色。
 - **1.5px 边框。** 刻意为之。不是 1px，不是 2px——1.5px 就是这个风格的签名。
+
+## 许可证
+
+MIT — 详见 [LICENSE](LICENSE)。
 
 ## 致谢
 

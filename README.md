@@ -41,9 +41,19 @@ Import `acme-html-style.skill` through your agent's skill manager or place it in
 **Option B — From source**
 
 ```bash
-git clone https://github.com/ThariqS/html-effectiveness.git
-cp -r html-effectiveness/acme-html-style ~/.claude/skills/acme-html-style
+git clone https://github.com/kaiychen9/acme-html-style.git
+cp -r acme-html-style ~/.claude/skills/acme-html-style
 ```
+
+**Option C — Install via Agent**
+
+Ask your AI agent to install the skill directly:
+
+> "Install the acme-html-style skill from https://github.com/kaiychen9/acme-html-style"
+
+In Claude Code, you can also use the `/install` command or say:
+
+> "Find and install the acme-html-style skill for generating warm editorial HTML documents"
 
 ### How it triggers
 
@@ -70,6 +80,10 @@ A single `.html` file you can open directly in a browser — no build step, no d
 - **Typography hierarchy.** Serif for headings (gravitas), sans for body (readability), mono for code/data (precision).
 - **Warm palette.** Ivory page backgrounds, terracotta accents, olive for success. No bright saturated colors.
 - **1.5px borders.** Deliberate. Not 1px, not 2px — 1.5px is the signature.
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.
 
 ## Credits
 
