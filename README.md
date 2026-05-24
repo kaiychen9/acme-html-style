@@ -30,29 +30,12 @@ If you like this style and want your agent to generate status reports, slide dec
 
 ## Gallery
 
-Swipe or scroll to browse examples of what this skill generates:
+Examples of what this skill generates (click to view full size):
 
-<table><tr>
-  <td><img src="assets/images/01-product-update.png" alt="Product Update" width="240"></td>
-  <td width="16"></td>
-  <td><img src="assets/images/02-design-system.png" alt="Design System" width="240"></td>
-  <td width="16"></td>
-  <td><img src="assets/images/03-pr-review.png" alt="PR Review" width="240"></td>
-  <td width="16"></td>
-  <td><img src="assets/images/04-slide-deck.png" alt="Slide Deck" width="240"></td>
-  <td width="16"></td>
-  <td><img src="assets/images/05-flowchart.png" alt="Flowchart" width="240"></td>
-  <td width="16"></td>
-  <td><img src="assets/images/06-feature-explainer.png" alt="Feature Explainer" width="240"></td>
-  <td width="16"></td>
-  <td><img src="assets/images/07-incident-report.png" alt="Incident Report" width="240"></td>
-  <td width="16"></td>
-  <td><img src="assets/images/08-concept-explainer.png" alt="Concept Explainer" width="240"></td>
-  <td width="16"></td>
-  <td><img src="assets/images/09-kanban-board.png" alt="Kanban Board" width="240"></td>
-  <td width="16"></td>
-  <td><img src="assets/images/10-implementation-plan.png" alt="Implementation Plan" width="240"></td>
-</tr></table>
+| | | | | |
+|---|---|---|---|---|
+| [![Product Update](assets/images/01-product-update.png)](assets/images/01-product-update.png) | [![Design System](assets/images/02-design-system.png)](assets/images/02-design-system.png) | [![PR Review](assets/images/03-pr-review.png)](assets/images/03-pr-review.png) | [![Slide Deck](assets/images/04-slide-deck.png)](assets/images/04-slide-deck.png) | [![Flowchart](assets/images/05-flowchart.png)](assets/images/05-flowchart.png) |
+| [![Feature Explainer](assets/images/06-feature-explainer.png)](assets/images/06-feature-explainer.png) | [![Incident Report](assets/images/07-incident-report.png)](assets/images/07-incident-report.png) | [![Concept Explainer](assets/images/08-concept-explainer.png)](assets/images/08-concept-explainer.png) | [![Kanban Board](assets/images/09-kanban-board.png)](assets/images/09-kanban-board.png) | [![Implementation Plan](assets/images/10-implementation-plan.png)](assets/images/10-implementation-plan.png) |
 
 ## Installation & Usage
 
