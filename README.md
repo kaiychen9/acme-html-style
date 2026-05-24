@@ -32,20 +32,27 @@ If you like this style and want your agent to generate status reports, slide dec
 
 Swipe or scroll to browse examples of what this skill generates:
 
-<div style="overflow-x: auto; white-space: nowrap; padding: 16px 0; -webkit-overflow-scrolling: touch;">
-  <div style="display: flex; gap: 16px;">
-    <img src="assets/images/01-product-update.png" alt="Product Update" title="Product Update" style="height: 180px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); flex-shrink: 0;">
-    <img src="assets/images/02-design-system.png" alt="Design System" title="Design System" style="height: 180px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); flex-shrink: 0;">
-    <img src="assets/images/03-pr-review.png" alt="PR Review" title="PR Review" style="height: 180px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); flex-shrink: 0;">
-    <img src="assets/images/04-slide-deck.png" alt="Slide Deck" title="Slide Deck" style="height: 180px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); flex-shrink: 0;">
-    <img src="assets/images/05-flowchart.png" alt="Flowchart" title="Flowchart" style="height: 180px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); flex-shrink: 0;">
-    <img src="assets/images/06-feature-explainer.png" alt="Feature Explainer" title="Feature Explainer" style="height: 180px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); flex-shrink: 0;">
-    <img src="assets/images/07-incident-report.png" alt="Incident Report" title="Incident Report" style="height: 180px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); flex-shrink: 0;">
-    <img src="assets/images/08-concept-explainer.png" alt="Concept Explainer" title="Concept Explainer" style="height: 180px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); flex-shrink: 0;">
-    <img src="assets/images/09-kanban-board.png" alt="Kanban Board" title="Kanban Board" style="height: 180px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); flex-shrink: 0;">
-    <img src="assets/images/10-implementation-plan.png" alt="Implementation Plan" title="Implementation Plan" style="height: 180px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); flex-shrink: 0;">
-  </div>
-</div>
+<table><tr>
+  <td><img src="assets/images/01-product-update.png" alt="Product Update" width="240"></td>
+  <td width="16"></td>
+  <td><img src="assets/images/02-design-system.png" alt="Design System" width="240"></td>
+  <td width="16"></td>
+  <td><img src="assets/images/03-pr-review.png" alt="PR Review" width="240"></td>
+  <td width="16"></td>
+  <td><img src="assets/images/04-slide-deck.png" alt="Slide Deck" width="240"></td>
+  <td width="16"></td>
+  <td><img src="assets/images/05-flowchart.png" alt="Flowchart" width="240"></td>
+  <td width="16"></td>
+  <td><img src="assets/images/06-feature-explainer.png" alt="Feature Explainer" width="240"></td>
+  <td width="16"></td>
+  <td><img src="assets/images/07-incident-report.png" alt="Incident Report" width="240"></td>
+  <td width="16"></td>
+  <td><img src="assets/images/08-concept-explainer.png" alt="Concept Explainer" width="240"></td>
+  <td width="16"></td>
+  <td><img src="assets/images/09-kanban-board.png" alt="Kanban Board" width="240"></td>
+  <td width="16"></td>
+  <td><img src="assets/images/10-implementation-plan.png" alt="Implementation Plan" width="240"></td>
+</tr></table>
 
 ## Installation & Usage
 
