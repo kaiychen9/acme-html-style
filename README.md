@@ -28,6 +28,15 @@ If you like this style and want your agent to generate status reports, slide dec
 | Reports | Weekly status updates, incident post-mortems |
 | Custom Editing UIs | Kanban boards, feature flag toggles, prompt tuners |
 
+## Gallery
+
+Examples of what this skill generates (click to view full size):
+
+| | | | | |
+|---|---|---|---|---|
+| [![Product Update](assets/images/01-product-update.png)](assets/images/01-product-update.png) | [![Design System](assets/images/02-design-system.png)](assets/images/02-design-system.png) | [![PR Review](assets/images/03-pr-review.png)](assets/images/03-pr-review.png) | [![Slide Deck](assets/images/04-slide-deck.png)](assets/images/04-slide-deck.png) | [![Flowchart](assets/images/05-flowchart.png)](assets/images/05-flowchart.png) |
+| [![Feature Explainer](assets/images/06-feature-explainer.png)](assets/images/06-feature-explainer.png) | [![Incident Report](assets/images/07-incident-report.png)](assets/images/07-incident-report.png) | [![Concept Explainer](assets/images/08-concept-explainer.png)](assets/images/08-concept-explainer.png) | [![Kanban Board](assets/images/09-kanban-board.png)](assets/images/09-kanban-board.png) | [![Implementation Plan](assets/images/10-implementation-plan.png)](assets/images/10-implementation-plan.png) |
+
 ## Installation & Usage
 
 This skill works with any AI coding agent that supports skills (Claude Code, Codex, OpenClaw, Cursor, etc.).

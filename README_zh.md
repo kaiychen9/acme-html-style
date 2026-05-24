@@ -28,6 +28,15 @@ LLM 自己也能生成 HTML，但产出的风格通常千篇一律——紫色�
 | 报告 | 周报、事故复盘 |
 | 自定义编辑界面 | 看板、功能开关面板、Prompt 调优器 |
 
+## 效果展示
+
+以下是本技能生成的文档示例（点击可查看大图）：
+
+| | | | | |
+|---|---|---|---|---|
+| [![产品更新](assets/images/01-product-update.png)](assets/images/01-product-update.png) | [![设计系统](assets/images/02-design-system.png)](assets/images/02-design-system.png) | [![PR 审查](assets/images/03-pr-review.png)](assets/images/03-pr-review.png) | [![幻灯片](assets/images/04-slide-deck.png)](assets/images/04-slide-deck.png) | [![流程图](assets/images/05-flowchart.png)](assets/images/05-flowchart.png) |
+| [![特性讲解](assets/images/06-feature-explainer.png)](assets/images/06-feature-explainer.png) | [![事故报告](assets/images/07-incident-report.png)](assets/images/07-incident-report.png) | [![概念解析](assets/images/08-concept-explainer.png)](assets/images/08-concept-explainer.png) | [![看板](assets/images/09-kanban-board.png)](assets/images/09-kanban-board.png) | [![实现计划](assets/images/10-implementation-plan.png)](assets/images/10-implementation-plan.png) |
+
 ## 安装与使用
 
 本技能适用于任何支持 skill 的 AI 编程 agent（Claude Code、Codex、OpenClaw、Cursor 等）。
