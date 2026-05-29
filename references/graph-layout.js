@@ -150,8 +150,9 @@ function layoutForce(graph, opts) {
     vel[i] = { x: 0, y: 0 };
   }
 
-  // Edge index for fast lookup
-  var edgeMap = buildEdgeMap(g);
+  // Precomputed id-to-index map for O(1) lookup
+  var idxMap = {};
+  for (var i = 0; i < n; i++) idxMap[g.nodes[i].id] = i;
 
   var temp = 1.0;
   for (var iter = 0; iter < iterations; iter++) {
@@ -176,8 +177,8 @@ function layoutForce(graph, opts) {
     // Attraction: edges as springs
     for (var e = 0; e < g.edges.length; e++) {
       var edge = g.edges[e];
-      var si = nodeIndex(g, edge.source);
-      var ti = nodeIndex(g, edge.target);
+      var si = idxMap[edge.source];
+      var ti = idxMap[edge.target];
       if (si < 0 || ti < 0) continue;
       var ns = g.nodes[si], nt = g.nodes[ti];
       var dx = nt.x - ns.x;
@@ -186,10 +187,10 @@ function layoutForce(graph, opts) {
       var force = attraction * (dist - idealLen);
       var fx = (dx / dist) * force;
       var fy = (dy / dist) * force;
-      vel[si].x += fx * temp;
-      vel[si].y += fy * temp;
-      vel[ti].x -= fx * temp;
-      vel[ti].y -= fy * temp;
+      vel[si].x += fx;
+      vel[si].y += fy;
+      vel[ti].x -= fx;
+      vel[ti].y -= fy;
     }
 
     // Apply velocities
