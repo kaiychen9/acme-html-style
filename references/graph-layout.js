@@ -85,8 +85,8 @@ function intersectCircle(x1, y1, x2, y2, cx, cy, r) {
   var sqrtD = Math.sqrt(disc);
   var t1 = (-b - sqrtD) / (2 * a);
   var t2 = (-b + sqrtD) / (2 * a);
-  var t = t1 > 0 ? t1 : t2;
-  if (t <= 0) t = t1 > 0 ? t1 : t2;
+  var t = t1 > 0 ? t1 : (t2 > 0 ? t2 : -1);
+  if (t < 0) return { x: x1, y: y1 };
   return { x: x1 + t * dx, y: y1 + t * dy };
 }
 
