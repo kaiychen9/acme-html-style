@@ -116,6 +116,11 @@ Header (eyebrow + h1 + sub)
 **Trigger phrases**: "flowchart", "diagram", "SVG", "illustration", "figure", "pipeline", "architecture diagram"
 
 **Key patterns**:
+- Use `layoutForce()` for network/architecture diagrams, `layoutSugiyama()` for DAGs/flowcharts
+- Route edges: `routeStraight(layout)` for simple, `routeOrthogonal(layout)` for L-shaped, `routeBezier(layout)` for curves
+- Render with `renderSVG(layout, opts)` — produces Acme-token-compliant SVG
+- Import functions from `references/graph-layout.js` or use the streamlined embed in starter-template
+- See `references/graph-layout.md` for complete API documentation
 - Inline SVG with semantic class-based styling (`.st`, `.fl`, `.cl`, `.ol`, `.oa`, `.ln`, `.lc`)
 - Clickable nodes that update a sticky sidebar
 - Legend panel
