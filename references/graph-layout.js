@@ -96,8 +96,10 @@ function intersectCircle(x1, y1, x2, y2, cx, cy, r) {
  * Nodes must have {x, y, w, h} properties.
  */
 function clipEdge(srcNode, dstNode, srcCx, srcCy, dstCx, dstCy) {
-  var start = intersectRect(srcCx, srcCy, dstCx, dstCy, srcNode.x, srcNode.y, srcNode.w, srcNode.h);
-  var end   = intersectRect(dstCx, dstCy, srcCx, srcCy, dstNode.x, dstNode.y, dstNode.w, dstNode.h);
+  var start = intersectRect(srcCx, srcCy, dstCx, dstCy,
+    srcNode.x - srcNode.w/2, srcNode.y - srcNode.h/2, srcNode.w, srcNode.h);
+  var end   = intersectRect(dstCx, dstCy, srcCx, srcCy,
+    dstNode.x - dstNode.w/2, dstNode.y - dstNode.h/2, dstNode.w, dstNode.h);
   if (!start || !end) return { x1: srcCx, y1: srcCy, x2: dstCx, y2: dstCy };
   return { x1: start.x, y1: start.y, x2: end.x, y2: end.y };
 }
