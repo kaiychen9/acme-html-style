@@ -103,3 +103,142 @@ function clipEdge(srcNode, dstNode, srcCx, srcCy, dstCx, dstCy) {
   if (!start || !end) return { x1: srcCx, y1: srcCy, x2: dstCx, y2: dstCy };
   return { x1: start.x, y1: start.y, x2: end.x, y2: end.y };
 }
+
+// ---- Force-Directed Layout (Fruchterman-Reingold) --------------------------
+
+/**
+ * layoutForce(graph, opts) — Compute node positions using Fruchterman-Reingold.
+ * Nodes repel each other (1/d²), edges act as springs (attraction ∝ d²/k).
+ * Cooling schedule: temperature starts high and decays each iteration.
+ *
+ * Options (all optional):
+ *   iterations: 100     — max iterations
+ *   repulsion: 5000     — repulsion constant (higher = more spread)
+ *   attraction: 0.01    — spring constant
+ *   idealLength: 100    — natural spring length
+ *   damping: 0.9        — velocity damping per iteration
+ *   cooling: 0.95       — temperature cooling factor
+ *   width: 800, height: 600 — bounding area
+ *   seed: 42            — RNG seed for deterministic output
+ * Returns a Layout with node positions (x, y center coords) and empty edge points.
+ */
+function layoutForce(graph, opts) {
+  opts = opts || {};
+  var iterations  = opts.iterations  || 100;
+  var repulsion   = opts.repulsion   || 5000;
+  var attraction  = opts.attraction  || 0.01;
+  var idealLen    = opts.idealLength || 100;
+  var damping     = opts.damping     || 0.9;
+  var cooling     = opts.cooling     || 0.95;
+  var width       = opts.width       || 800;
+  var height      = opts.height      || 600;
+  var seed        = opts.seed        || 42;
+
+  // Simple LCG for deterministic jitter
+  var rng = lcg(seed);
+
+  var g = cloneGraph(graph);
+  var n = g.nodes.length;
+  if (n === 0) return g;
+  var cx = width / 2, cy = height / 2;
+
+  // Initialize positions randomly (seeded) around center
+  var vel = [];
+  for (var i = 0; i < n; i++) {
+    g.nodes[i].x = cx + (rng() - 0.5) * 200;
+    g.nodes[i].y = cy + (rng() - 0.5) * 200;
+    vel[i] = { x: 0, y: 0 };
+  }
+
+  // Edge index for fast lookup
+  var edgeMap = buildEdgeMap(g);
+
+  var temp = 1.0;
+  for (var iter = 0; iter < iterations; iter++) {
+    // Repulsion: every node pair
+    for (var i = 0; i < n; i++) {
+      var disp = { x: 0, y: 0 };
+      var ni = g.nodes[i];
+      for (var j = 0; j < n; j++) {
+        if (i === j) continue;
+        var nj = g.nodes[j];
+        var dx = ni.x - nj.x;
+        var dy = ni.y - nj.y;
+        var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        var force = repulsion / (dist * dist);
+        disp.x += (dx / dist) * force;
+        disp.y += (dy / dist) * force;
+      }
+      vel[i].x = (vel[i].x + disp.x) * damping;
+      vel[i].y = (vel[i].y + disp.y) * damping;
+    }
+
+    // Attraction: edges as springs
+    for (var e = 0; e < g.edges.length; e++) {
+      var edge = g.edges[e];
+      var si = nodeIndex(g, edge.source);
+      var ti = nodeIndex(g, edge.target);
+      if (si < 0 || ti < 0) continue;
+      var ns = g.nodes[si], nt = g.nodes[ti];
+      var dx = nt.x - ns.x;
+      var dy = nt.y - ns.y;
+      var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      var force = attraction * (dist - idealLen);
+      var fx = (dx / dist) * force;
+      var fy = (dy / dist) * force;
+      vel[si].x += fx * temp;
+      vel[si].y += fy * temp;
+      vel[ti].x -= fx * temp;
+      vel[ti].y -= fy * temp;
+    }
+
+    // Apply velocities
+    for (var i = 0; i < n; i++) {
+      g.nodes[i].x += vel[i].x * temp;
+      g.nodes[i].y += vel[i].y * temp;
+      // Clamp to bounds
+      g.nodes[i].x = Math.max(20, Math.min(width - 20, g.nodes[i].x));
+      g.nodes[i].y = Math.max(20, Math.min(height - 20, g.nodes[i].y));
+    }
+
+    temp *= cooling;
+  }
+
+  // Initialize empty edge points (routing fills these later)
+  for (var e = 0; e < g.edges.length; e++) {
+    g.edges[e].points = [];
+  }
+
+  return g;
+}
+
+/** Simple LCG for deterministic seeded random number generation */
+function lcg(seed) {
+  var s = seed || 42;
+  return function() {
+    s = (s * 1664525 + 1013904223) | 0;
+    return (s >>> 0) / 4294967296;
+  };
+}
+
+/** Build adjacency map: nodeId → set of connected node ids */
+function buildEdgeMap(layout) {
+  var map = {};
+  for (var i = 0; i < layout.nodes.length; i++) {
+    map[layout.nodes[i].id] = {};
+  }
+  for (var e = 0; e < layout.edges.length; e++) {
+    var edge = layout.edges[e];
+    if (map[edge.source] !== undefined) map[edge.source][edge.target] = true;
+    if (map[edge.target] !== undefined) map[edge.target][edge.source] = true;
+  }
+  return map;
+}
+
+/** Find node index by id. Returns -1 if not found. */
+function nodeIndex(layout, id) {
+  for (var i = 0; i < layout.nodes.length; i++) {
+    if (layout.nodes[i].id === id) return i;
+  }
+  return -1;
+}
