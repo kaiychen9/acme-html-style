@@ -549,3 +549,163 @@ function layoutGrid(graph, opts) {
   for (var e = 0; e < g.edges.length; e++) g.edges[e].points = [];
   return g;
 }
+
+// ---- Edge Routing -----------------------------------------------------------
+
+/**
+ * routeStraight(layout) — Straight line segments, clipped to node boundaries.
+ * Simplest routing. Sets each edge's points to [start, end] on boundaries.
+ */
+function routeStraight(layout) {
+  for (var e = 0; e < layout.edges.length; e++) {
+    var edge = layout.edges[e];
+    var si = nodeIndex(layout, edge.source);
+    var ti = nodeIndex(layout, edge.target);
+    if (si < 0 || ti < 0) continue;
+    var src = layout.nodes[si], dst = layout.nodes[ti];
+    var clip = clipEdge(src, dst, src.x, src.y, dst.x, dst.y);
+    edge.points = [{ x: clip.x1, y: clip.y1 }, { x: clip.x2, y: clip.y2 }];
+  }
+  return layout;
+}
+
+/**
+ * routeOrthogonal(layout, opts) — L-shaped (orthogonal) edge routing.
+ * Edges go: source → corner → target. Corner direction chosen by aspect ratio.
+ * Clips endpoints to node boundaries.
+ * Options: cornerOffset (20) — extra padding at corner
+ */
+function routeOrthogonal(layout, opts) {
+  opts = opts || {};
+  var cornerOffset = opts.cornerOffset || 20;
+
+  for (var e = 0; e < layout.edges.length; e++) {
+    var edge = layout.edges[e];
+    var si = nodeIndex(layout, edge.source);
+    var ti = nodeIndex(layout, edge.target);
+    if (si < 0 || ti < 0) continue;
+    var src = layout.nodes[si], dst = layout.nodes[ti];
+
+    // Compute entry/exit boundary points using clipEdge
+    var clip = clipEdge(src, dst, src.x, src.y, dst.x, dst.y);
+
+    var dx = Math.abs(clip.x2 - clip.x1), dy = Math.abs(clip.y2 - clip.y1);
+    var corner;
+    if (dx > dy) {
+      // More horizontal: go horizontal then vertical
+      corner = { x: (clip.x1 + clip.x2) / 2, y: clip.y1 };
+    } else {
+      // More vertical: go vertical then horizontal
+      corner = { x: clip.x1, y: (clip.y1 + clip.y2) / 2 };
+    }
+
+    edge.points = [
+      { x: clip.x1, y: clip.y1 },
+      { x: corner.x, y: corner.y },
+      { x: clip.x2, y: clip.y2 }
+    ];
+  }
+  return layout;
+}
+
+/**
+ * routeBezier(layout, opts) — Cubic bezier curves, clipped to boundaries.
+ * Generates smooth curves by placing control points offset from straight line.
+ * Options: tension (0.3) — control point distance relative to edge length
+ */
+function routeBezier(layout, opts) {
+  opts = opts || {};
+  var tension = opts.tension || 0.3;
+
+  for (var e = 0; e < layout.edges.length; e++) {
+    var edge = layout.edges[e];
+    var si = nodeIndex(layout, edge.source);
+    var ti = nodeIndex(layout, edge.target);
+    if (si < 0 || ti < 0) continue;
+    var src = layout.nodes[si], dst = layout.nodes[ti];
+
+    var clip = clipEdge(src, dst, src.x, src.y, dst.x, dst.y);
+    var dx = clip.x2 - clip.x1, dy = clip.y2 - clip.y1;
+    var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+    // Perpendicular offset for control points
+    var perpX = -dy / dist * dist * tension;
+    var perpY =  dx / dist * dist * tension;
+
+    edge.points = [
+      { x: clip.x1, y: clip.y1 },
+      { x: clip.x1 + dx * 0.25 + perpX, y: clip.y1 + dy * 0.25 + perpY },
+      { x: clip.x1 + dx * 0.75 - perpX, y: clip.y1 + dy * 0.75 - perpY },
+      { x: clip.x2, y: clip.y2 }
+    ];
+  }
+  return layout;
+}
+
+/**
+ * routeAvoidNodes(layout, opts) — Reroute edges that pass through non-endpoint nodes.
+ * Checks each straight edge against all intermediate nodes. If blocked, inserts detour waypoint.
+ * Options: padding (10) — extra clearance around nodes
+ */
+function routeAvoidNodes(layout, opts) {
+  opts = opts || {};
+  var padding = opts.padding || 10;
+
+  // First route straight to get initial points
+  routeStraight(layout);
+
+  for (var e = 0; e < layout.edges.length; e++) {
+    var edge = layout.edges[e];
+    var si = nodeIndex(layout, edge.source);
+    var ti = nodeIndex(layout, edge.target);
+    if (si < 0 || ti < 0) continue;
+    if (!edge.points || edge.points.length < 2) continue;
+
+    var p1 = edge.points[0], p2 = edge.points[edge.points.length - 1];
+
+    // Check each intermediate node
+    var waypoints = [p1];
+    for (var n = 0; n < layout.nodes.length; n++) {
+      if (n === si || n === ti) continue;
+      var node = layout.nodes[n];
+      var blocked = lineIntersectsRect(
+        p1.x, p1.y, p2.x, p2.y,
+        node.x - node.w/2 - padding, node.y - node.h/2 - padding,
+        node.w + 2 * padding, node.h + 2 * padding
+      );
+      if (blocked) {
+        // Detour waypoint: go to the right of the blocking node
+        waypoints.push({ x: node.x + node.w/2 + padding + 20, y: node.y });
+      }
+    }
+    waypoints.push(p2);
+    edge.points = waypoints;
+  }
+  return layout;
+}
+
+/**
+ * lineIntersectsRect — Check if line segment (x1,y1)-(x2,y2) intersects rectangle.
+ * Uses Liang-Barsky algorithm. Returns true/false.
+ */
+function lineIntersectsRect(x1, y1, x2, y2, rx, ry, rw, rh) {
+  var dx = x2 - x1, dy = y2 - y1;
+  var p = [-dx, dx, -dy, dy];
+  var q = [x1 - rx, rx + rw - x1, y1 - ry, ry + rh - y1];
+  var u1 = 0, u2 = 1;
+  for (var i = 0; i < 4; i++) {
+    if (p[i] === 0) {
+      if (q[i] < 0) return false;
+      continue;
+    }
+    var t = q[i] / p[i];
+    if (p[i] < 0) {
+      if (t > u2) return false;
+      if (t > u1) u1 = t;
+    } else {
+      if (t < u1) return false;
+      if (t < u2) u2 = t;
+    }
+  }
+  return u1 <= u2;
+}
