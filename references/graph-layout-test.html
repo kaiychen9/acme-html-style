@@ -1,0 +1,1115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Graph Layout — Visual Verification Tests</title>
+  <style>
+    :root {
+      --ivory: #FAF9F5; --slate: #141413; --clay: #D97757; --clay-d: #B85C3E;
+      --oat: #E3DACC; --olive: #788C5D; --rust: #B04A3F; --white: #FFFFFF;
+      --gray-100: #F0EEE6; --gray-300: #D1CFC5; --gray-500: #87867F; --gray-700: #3D3D3A;
+      --success: #788C5D; --warning: #C78E3F; --danger: #B04A4A; --info: #5C7CA3;
+      --serif: ui-serif, Georgia, "Times New Roman", Times, serif;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+      --radius-panel: 12px; --radius-row: 8px; --radius-pill: 999px;
+      --border: 1.5px solid var(--gray-300);
+      --shadow-sm: 0 1px 2px rgba(20,20,19,0.06);
+      --shadow-md: 0 4px 10px rgba(20,20,19,0.08);
+      --shadow-lg: 0 12px 28px rgba(20,20,19,0.12);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--ivory);
+      color: var(--slate);
+      font-family: var(--sans);
+      font-weight: 430;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .page {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 48px 32px 32px;
+    }
+
+    header {
+      margin-bottom: 40px;
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--clay);
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 28px;
+      letter-spacing: -0.02em;
+      color: var(--slate);
+      margin-bottom: 6px;
+    }
+
+    .sub {
+      font-family: var(--sans);
+      font-size: 15px;
+      color: var(--gray-500);
+      line-height: 1.55;
+    }
+
+    h2 {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 20px;
+      letter-spacing: -0.015em;
+      color: var(--slate);
+      margin-bottom: 4px;
+    }
+
+    .rule {
+      border: none;
+      border-top: 1.5px solid var(--gray-300);
+      margin: 0 0 24px 0;
+    }
+
+    section {
+      margin-bottom: 40px;
+    }
+
+    /* Test grid: 3 cards per row */
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .test-card {
+      background: var(--white);
+      border: var(--border);
+      border-radius: var(--radius-panel);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .test-card h3 {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 16px;
+      letter-spacing: -0.015em;
+      color: var(--slate);
+    }
+
+    .svg-wrap {
+      border: 1.5px solid var(--gray-100);
+      border-radius: var(--radius-row);
+      background: var(--ivory);
+      overflow: hidden;
+    }
+
+    .metrics {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--gray-500);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .metric-label {
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 10px;
+      color: var(--gray-500);
+    }
+
+    .metric-value {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--slate);
+    }
+
+    .metric-val--time { color: var(--clay); }
+    .metric-val--nodes { color: var(--info); }
+    .metric-val--edges { color: var(--olive); }
+
+    .metric-item {
+      background: var(--gray-100);
+      border-radius: var(--radius-row);
+      padding: 8px 12px;
+      text-align: center;
+    }
+
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .summary-card {
+      background: var(--white);
+      border: var(--border);
+      border-radius: var(--radius-panel);
+      padding: 16px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .summary-card .label {
+      font-family: var(--mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--gray-500);
+      margin-bottom: 4px;
+    }
+
+    .summary-card .value {
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate);
+    }
+
+    .summary-card .time {
+      font-family: var(--mono);
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--clay);
+    }
+
+    footer {
+      margin-top: 48px;
+      padding-top: 20px;
+      border-top: 1.5px solid var(--gray-300);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--gray-500);
+    }
+
+    @media (max-width: 900px) {
+      .test-grid { grid-template-columns: repeat(2, 1fr); }
+      .summary-bar { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+      .test-grid { grid-template-columns: 1fr; }
+      .summary-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="eyebrow">Graph Layout Library</div>
+      <h1>Visual Verification Tests</h1>
+      <p class="sub">All 5 layout algorithms rendered in self-contained SVG. Each card shows the output of a distinct graph structure with layout, routing, and rendering timing.</p>
+    </header>
+
+    <!-- Summary bar -->
+    <section>
+      <div class="summary-bar" id="summary"></div>
+    </section>
+
+    <!-- Test grid -->
+    <section>
+      <h2>Layout Results</h2>
+      <hr class="rule">
+      <div class="test-grid" id="test-grid"></div>
+    </section>
+
+    <footer>
+      graph-layout.js &middot; reference test page &middot; generated 2026-05-30
+    </footer>
+  </div>
+
+  <script>
+    // =====================================================================
+    // Inline graph-layout.js — Full library embedded for testing
+    // =====================================================================
+
+    var DEFAULT_NODE_W = 100;
+    var DEFAULT_NODE_H = 48;
+
+    function cloneGraph(graph) {
+      return {
+        nodes: graph.nodes.map(function(n) { return { id: n.id, label: n.label, w: n.w || DEFAULT_NODE_W, h: n.h || DEFAULT_NODE_H }; }),
+        edges: graph.edges.map(function(e) { return { source: e.source, target: e.target, label: e.label || '' }; })
+      };
+    }
+
+    function intersectRect(x1, y1, x2, y2, rx, ry, rw, rh) {
+      var dx = x2 - x1, dy = y2 - y1;
+      if (dx === 0 && dy === 0) return { x: x1, y: y1 };
+      var tMin = Infinity;
+      var ix, iy;
+      if (dx !== 0) {
+        var t = (rx - x1) / dx;
+        if (t > 0 && t < tMin) {
+          var y = y1 + t * dy;
+          if (y >= ry && y <= ry + rh) { tMin = t; ix = rx; iy = y; }
+        }
+      }
+      if (dx !== 0) {
+        var t = (rx + rw - x1) / dx;
+        if (t > 0 && t < tMin) {
+          var y = y1 + t * dy;
+          if (y >= ry && y <= ry + rh) { tMin = t; ix = rx + rw; iy = y; }
+        }
+      }
+      if (dy !== 0) {
+        var t = (ry - y1) / dy;
+        if (t > 0 && t < tMin) {
+          var x = x1 + t * dx;
+          if (x >= rx && x <= rx + rw) { tMin = t; ix = x; iy = ry; }
+        }
+      }
+      if (dy !== 0) {
+        var t = (ry + rh - y1) / dy;
+        if (t > 0 && t < tMin) {
+          var x = x1 + t * dx;
+          if (x >= rx && x <= rx + rw) { tMin = t; ix = x; iy = ry + rh; }
+        }
+      }
+      if (tMin === Infinity) return null;
+      return { x: ix, y: iy };
+    }
+
+    function intersectCircle(x1, y1, x2, y2, cx, cy, r) {
+      var dx = x2 - x1, dy = y2 - y1;
+      var fx = x1 - cx, fy = y1 - cy;
+      var a = dx * dx + dy * dy;
+      if (a === 0) return { x: x1, y: y1 };
+      var b = 2 * (fx * dx + fy * dy);
+      var c = fx * fx + fy * fy - r * r;
+      var disc = b * b - 4 * a * c;
+      if (disc < 0) return { x: x1, y: y1 };
+      var sqrtD = Math.sqrt(disc);
+      var t1 = (-b - sqrtD) / (2 * a);
+      var t2 = (-b + sqrtD) / (2 * a);
+      var t = t1 > 0 ? t1 : (t2 > 0 ? t2 : -1);
+      if (t < 0) return { x: x1, y: y1 };
+      return { x: x1 + t * dx, y: y1 + t * dy };
+    }
+
+    function clipEdge(srcNode, dstNode, srcCx, srcCy, dstCx, dstCy) {
+      var start = intersectRect(srcCx, srcCy, dstCx, dstCy,
+        srcNode.x - srcNode.w/2, srcNode.y - srcNode.h/2, srcNode.w, srcNode.h);
+      var end   = intersectRect(dstCx, dstCy, srcCx, srcCy,
+        dstNode.x - dstNode.w/2, dstNode.y - dstNode.h/2, dstNode.w, dstNode.h);
+      if (!start || !end) return { x1: srcCx, y1: srcCy, x2: dstCx, y2: dstCy };
+      return { x1: start.x, y1: start.y, x2: end.x, y2: end.y };
+    }
+
+    function lcg(seed) {
+      var s = seed || 42;
+      return function() {
+        s = (s * 1664525 + 1013904223) | 0;
+        return (s >>> 0) / 4294967296;
+      };
+    }
+
+    function buildEdgeMap(layout) {
+      var map = {};
+      for (var i = 0; i < layout.nodes.length; i++) {
+        map[layout.nodes[i].id] = {};
+      }
+      for (var e = 0; e < layout.edges.length; e++) {
+        var edge = layout.edges[e];
+        if (map[edge.source] !== undefined) map[edge.source][edge.target] = true;
+        if (map[edge.target] !== undefined) map[edge.target][edge.source] = true;
+      }
+      return map;
+    }
+
+    function nodeIndex(layout, id) {
+      for (var i = 0; i < layout.nodes.length; i++) {
+        if (layout.nodes[i].id === id) return i;
+      }
+      return -1;
+    }
+
+    function layoutForce(graph, opts) {
+      opts = opts || {};
+      var iterations  = opts.iterations  || 100;
+      var repulsion   = opts.repulsion   || 5000;
+      var attraction  = opts.attraction  || 0.01;
+      var idealLen    = opts.idealLength || 100;
+      var damping     = opts.damping     || 0.9;
+      var cooling     = opts.cooling     || 0.95;
+      var width       = opts.width       || 800;
+      var height      = opts.height      || 600;
+      var seed        = opts.seed        || 42;
+
+      var rng = lcg(seed);
+      var g = cloneGraph(graph);
+      var n = g.nodes.length;
+      if (n === 0) return g;
+      var cx = width / 2, cy = height / 2;
+
+      var vel = [];
+      for (var i = 0; i < n; i++) {
+        g.nodes[i].x = cx + (rng() - 0.5) * 200;
+        g.nodes[i].y = cy + (rng() - 0.5) * 200;
+        vel[i] = { x: 0, y: 0 };
+      }
+
+      var idxMap = {};
+      for (var i = 0; i < n; i++) idxMap[g.nodes[i].id] = i;
+
+      var temp = 1.0;
+      for (var iter = 0; iter < iterations; iter++) {
+        for (var i = 0; i < n; i++) {
+          var disp = { x: 0, y: 0 };
+          var ni = g.nodes[i];
+          for (var j = 0; j < n; j++) {
+            if (i === j) continue;
+            var nj = g.nodes[j];
+            var dx = ni.x - nj.x;
+            var dy = ni.y - nj.y;
+            var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+            var force = repulsion / (dist * dist);
+            disp.x += (dx / dist) * force;
+            disp.y += (dy / dist) * force;
+          }
+          vel[i].x = (vel[i].x + disp.x) * damping;
+          vel[i].y = (vel[i].y + disp.y) * damping;
+        }
+
+        for (var e = 0; e < g.edges.length; e++) {
+          var edge = g.edges[e];
+          var si = idxMap[edge.source];
+          var ti = idxMap[edge.target];
+          if (si < 0 || ti < 0) continue;
+          var ns = g.nodes[si], nt = g.nodes[ti];
+          var dx = nt.x - ns.x;
+          var dy = nt.y - ns.y;
+          var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          var force = attraction * (dist - idealLen);
+          var fx = (dx / dist) * force;
+          var fy = (dy / dist) * force;
+          vel[si].x += fx;
+          vel[si].y += fy;
+          vel[ti].x -= fx;
+          vel[ti].y -= fy;
+        }
+
+        for (var i = 0; i < n; i++) {
+          g.nodes[i].x += vel[i].x * temp;
+          g.nodes[i].y += vel[i].y * temp;
+          g.nodes[i].x = Math.max(20, Math.min(width - 20, g.nodes[i].x));
+          g.nodes[i].y = Math.max(20, Math.min(height - 20, g.nodes[i].y));
+        }
+
+        temp *= cooling;
+      }
+
+      for (var e = 0; e < g.edges.length; e++) {
+        g.edges[e].points = [];
+      }
+
+      return g;
+    }
+
+    function layoutSugiyama(graph, opts) {
+      opts = opts || {};
+      var orientation  = opts.orientation  || 'TB';
+      var layerSpacing = opts.layerSpacing || 80;
+      var nodeSpacing  = opts.nodeSpacing  || 60;
+
+      var g = cloneGraph(graph);
+      var n = g.nodes.length;
+      if (n === 0) return g;
+
+      var adj = {}, indeg = {};
+      for (var i = 0; i < n; i++) { adj[g.nodes[i].id] = []; indeg[g.nodes[i].id] = 0; }
+      for (var e = 0; e < g.edges.length; e++) {
+        var src = g.edges[e].source, tgt = g.edges[e].target;
+        if (adj[src]) adj[src].push(tgt);
+        indeg[tgt] = (indeg[tgt] || 0) + 1;
+      }
+
+      var layer = {};
+      var queue = [];
+      for (var id in indeg) {
+        if (indeg[id] === 0) { layer[id] = 0; queue.push(id); }
+      }
+      if (queue.length === 0) {
+        for (var id in indeg) { layer[id] = 0; queue.push(id); }
+      }
+      while (queue.length > 0) {
+        var u = queue.shift();
+        var neighbors = adj[u] || [];
+        for (var j = 0; j < neighbors.length; j++) {
+          var v = neighbors[j];
+          var newLayer = layer[u] + 1;
+          if (layer[v] === undefined || newLayer > layer[v]) {
+            layer[v] = newLayer;
+          }
+          indeg[v]--;
+          if (indeg[v] === 0) queue.push(v);
+        }
+      }
+      for (var id in indeg) {
+        if (layer[id] === undefined) layer[id] = 0;
+      }
+
+      var layers = [];
+      for (var i = 0; i < n; i++) {
+        var l = layer[g.nodes[i].id];
+        if (!layers[l]) layers[l] = [];
+        layers[l].push(i);
+      }
+
+      var positions = {};
+      for (var l = 0; l < layers.length; l++) {
+        for (var k = 0; k < layers[l].length; k++) {
+          positions[layers[l][k]] = k;
+        }
+      }
+      for (var sweep = 0; sweep < 3; sweep++) {
+        for (var l = 1; l < layers.length; l++) {
+          for (var k = 0; k < layers[l].length; k++) {
+            var ni = layers[l][k];
+            var nd = g.nodes[ni];
+            var sumAbove = 0, count = 0;
+            for (var e = 0; e < g.edges.length; e++) {
+              if (g.edges[e].target === nd.id) {
+                var si = nodeIndex(g, g.edges[e].source);
+                if (si >= 0 && positions[si] !== undefined) { sumAbove += positions[si]; count++; }
+              }
+            }
+            if (count > 0) positions[ni] = sumAbove / count;
+          }
+          layers[l].sort(function(a, b) { return (positions[a] || 0) - (positions[b] || 0); });
+          for (var k = 0; k < layers[l].length; k++) positions[layers[l][k]] = k;
+        }
+      }
+
+      var maxLayerLen = 0;
+      for (var l = 0; l < layers.length; l++) maxLayerLen = Math.max(maxLayerLen, layers[l].length);
+
+      for (var l = 0; l < layers.length; l++) {
+        var rowLen = layers[l].length;
+        var startX = (maxLayerLen - rowLen) * nodeSpacing / 2;
+        for (var k = 0; k < rowLen; k++) {
+          var ni = layers[l][k];
+          g.nodes[ni].x = startX + k * nodeSpacing + nodeSpacing / 2;
+          g.nodes[ni].y = l * layerSpacing + DEFAULT_NODE_H / 2 + 20;
+        }
+      }
+
+      for (var e = 0; e < g.edges.length; e++) g.edges[e].points = [];
+      return g;
+    }
+
+    function layoutCircular(graph, opts) {
+      opts = opts || {};
+      var cw     = opts.width  || 600;
+      var ch     = opts.height || 600;
+      var radius = opts.radius || Math.min(cw, ch) * 0.4;
+      var cx     = opts.cx || cw / 2;
+      var cy     = opts.cy || ch / 2;
+
+      var g = cloneGraph(graph);
+      var n = g.nodes.length;
+      if (n === 0) return g;
+
+      var order = [0];
+      for (var i = 1; i < n; i++) {
+        var bestPos = 0, bestCross = Infinity;
+        for (var pos = 0; pos <= order.length; pos++) {
+          var test = order.slice(0, pos).concat([i]).concat(order.slice(pos));
+          var cross = countCrossingsCircular(g, test);
+          if (cross < bestCross) { bestCross = cross; bestPos = pos; }
+        }
+        order = order.slice(0, bestPos).concat([i]).concat(order.slice(bestPos));
+      }
+
+      for (var k = 0; k < n; k++) {
+        var angle = (2 * Math.PI * k / n) - Math.PI / 2;
+        g.nodes[order[k]].x = cx + Math.cos(angle) * radius;
+        g.nodes[order[k]].y = cy + Math.sin(angle) * radius;
+      }
+
+      for (var e = 0; e < g.edges.length; e++) g.edges[e].points = [];
+      return g;
+    }
+
+    function countCrossingsCircular(graph, order) {
+      var n = order.length;
+      var pos = {};
+      for (var i = 0; i < n; i++) pos[graph.nodes[order[i]].id] = i;
+      var cross = 0;
+      for (var a = 0; a < graph.edges.length; a++) {
+        for (var b = a + 1; b < graph.edges.length; b++) {
+          var e1 = graph.edges[a], e2 = graph.edges[b];
+          var s1 = pos[e1.source], t1 = pos[e1.target];
+          var s2 = pos[e2.source], t2 = pos[e2.target];
+          if (s1 === undefined || t1 === undefined || s2 === undefined || t2 === undefined) continue;
+          if (s1 > t1) { var tmp = s1; s1 = t1; t1 = tmp; }
+          if (s2 > t2) { var tmp = s2; s2 = t2; t2 = tmp; }
+          if ((s1 < s2 && s2 < t1 && t1 < t2) || (s2 < s1 && s1 < t2 && t2 < t1)) cross++;
+        }
+      }
+      return cross;
+    }
+
+    function layoutTree(graph, opts) {
+      opts = opts || {};
+      var hSpacing = opts.hSpacing || 80;
+      var vSpacing = opts.vSpacing || 80;
+      var orientation = opts.orientation || 'TB';
+
+      var g = cloneGraph(graph);
+      var n = g.nodes.length;
+      if (n === 0) return g;
+
+      var hasParent = {};
+      for (var i = 0; i < n; i++) hasParent[g.nodes[i].id] = false;
+      for (var e = 0; e < g.edges.length; e++) hasParent[g.edges[e].target] = true;
+      var rootId = g.nodes[0].id;
+      for (var id in hasParent) { if (!hasParent[id]) { rootId = id; break; } }
+
+      var children = {};
+      for (var i = 0; i < n; i++) children[g.nodes[i].id] = [];
+      for (var e = 0; e < g.edges.length; e++) {
+        if (children[g.edges[e].source]) children[g.edges[e].source].push(g.edges[e].target);
+      }
+
+      var depth = {};
+      var parent = {};
+      var order = [];
+      var queue = [rootId];
+      depth[rootId] = 0;
+      parent[rootId] = null;
+      var visited = {};
+      visited[rootId] = true;
+      while (queue.length > 0) {
+        var u = queue.shift();
+        order.push(u);
+        var kids = children[u] || [];
+        for (var j = 0; j < kids.length; j++) {
+          var v = kids[j];
+          if (!visited[v]) { visited[v] = true; depth[v] = depth[u] + 1; parent[v] = u; queue.push(v); }
+        }
+      }
+
+      var subtreeLeaves = {};
+      for (var i = order.length - 1; i >= 0; i--) {
+        var id = order[i];
+        var kids = children[id] || [];
+        if (kids.length === 0) {
+          subtreeLeaves[id] = 1;
+        } else {
+          var sum = 0;
+          for (var j = 0; j < kids.length; j++) sum += (subtreeLeaves[kids[j]] || 1);
+          subtreeLeaves[id] = sum;
+        }
+      }
+
+      var xPos = {};
+      var rootLeaves = subtreeLeaves[rootId] || 1;
+      var totalWidth = rootLeaves * hSpacing;
+      function assignPositions(nodeId, left, right) {
+        xPos[nodeId] = (left + right) / 2;
+        var kids = children[nodeId] || [];
+        if (kids.length === 0) return;
+        var totalLeaves = subtreeLeaves[nodeId];
+        var width = right - left;
+        var cursor = left;
+        for (var j = 0; j < kids.length; j++) {
+          var childLeaves = subtreeLeaves[kids[j]] || 1;
+          var childWidth = width * childLeaves / totalLeaves;
+          assignPositions(kids[j], cursor, cursor + childWidth);
+          cursor += childWidth;
+        }
+      }
+      assignPositions(rootId, -totalWidth / 2, totalWidth / 2);
+
+      for (var i = 0; i < n; i++) {
+        var ni = nodeIndex(g, order[i]);
+        if (ni >= 0) {
+          g.nodes[ni].x = (xPos[order[i]] || 0);
+          g.nodes[ni].y = (depth[order[i]] || 0) * vSpacing + DEFAULT_NODE_H / 2 + 20;
+        }
+      }
+
+      var minX = Infinity;
+      for (var i = 0; i < n; i++) minX = Math.min(minX, g.nodes[i].x);
+      if (minX < 0) {
+        var offset = -minX + 40;
+        for (var i = 0; i < n; i++) g.nodes[i].x += offset;
+      }
+
+      for (var e = 0; e < g.edges.length; e++) g.edges[e].points = [];
+      return g;
+    }
+
+    function layoutGrid(graph, opts) {
+      opts = opts || {};
+      var cols   = opts.columns || 4;
+      var cellW  = opts.cellW || 150;
+      var cellH  = opts.cellH || 100;
+      var startX = opts.startX || 20;
+      var startY = opts.startY || 20;
+
+      var g = cloneGraph(graph);
+      for (var i = 0; i < g.nodes.length; i++) {
+        var col = i % cols;
+        var row = Math.floor(i / cols);
+        g.nodes[i].x = startX + col * cellW + cellW / 2;
+        g.nodes[i].y = startY + row * cellH + DEFAULT_NODE_H / 2;
+      }
+
+      for (var e = 0; e < g.edges.length; e++) g.edges[e].points = [];
+      return g;
+    }
+
+    function routeStraight(layout) {
+      for (var e = 0; e < layout.edges.length; e++) {
+        var edge = layout.edges[e];
+        var si = nodeIndex(layout, edge.source);
+        var ti = nodeIndex(layout, edge.target);
+        if (si < 0 || ti < 0) continue;
+        var src = layout.nodes[si], dst = layout.nodes[ti];
+        var clip = clipEdge(src, dst, src.x, src.y, dst.x, dst.y);
+        edge.points = [{ x: clip.x1, y: clip.y1 }, { x: clip.x2, y: clip.y2 }];
+      }
+      return layout;
+    }
+
+    function routeOrthogonal(layout, opts) {
+      opts = opts || {};
+      var cornerOffset = opts.cornerOffset || 20;
+
+      for (var e = 0; e < layout.edges.length; e++) {
+        var edge = layout.edges[e];
+        var si = nodeIndex(layout, edge.source);
+        var ti = nodeIndex(layout, edge.target);
+        if (si < 0 || ti < 0) continue;
+        var src = layout.nodes[si], dst = layout.nodes[ti];
+
+        var clip = clipEdge(src, dst, src.x, src.y, dst.x, dst.y);
+        var dx = Math.abs(clip.x2 - clip.x1), dy = Math.abs(clip.y2 - clip.y1);
+        var corner;
+        if (dx > dy) {
+          corner = { x: (clip.x1 + clip.x2) / 2, y: clip.y1 };
+        } else {
+          corner = { x: clip.x1, y: (clip.y1 + clip.y2) / 2 };
+        }
+
+        edge.points = [
+          { x: clip.x1, y: clip.y1 },
+          { x: corner.x, y: corner.y },
+          { x: clip.x2, y: clip.y2 }
+        ];
+      }
+      return layout;
+    }
+
+    function routeBezier(layout, opts) {
+      opts = opts || {};
+      var tension = opts.tension || 0.3;
+
+      for (var e = 0; e < layout.edges.length; e++) {
+        var edge = layout.edges[e];
+        var si = nodeIndex(layout, edge.source);
+        var ti = nodeIndex(layout, edge.target);
+        if (si < 0 || ti < 0) continue;
+        var src = layout.nodes[si], dst = layout.nodes[ti];
+
+        var clip = clipEdge(src, dst, src.x, src.y, dst.x, dst.y);
+        var dx = clip.x2 - clip.x1, dy = clip.y2 - clip.y1;
+        var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+        var perpX = -dy / dist * dist * tension;
+        var perpY =  dx / dist * dist * tension;
+
+        edge.points = [
+          { x: clip.x1, y: clip.y1 },
+          { x: clip.x1 + dx * 0.25 + perpX, y: clip.y1 + dy * 0.25 + perpY },
+          { x: clip.x1 + dx * 0.75 - perpX, y: clip.y1 + dy * 0.75 - perpY },
+          { x: clip.x2, y: clip.y2 }
+        ];
+      }
+      return layout;
+    }
+
+    function routeAvoidNodes(layout, opts) {
+      opts = opts || {};
+      var padding = opts.padding || 10;
+      routeStraight(layout);
+
+      for (var e = 0; e < layout.edges.length; e++) {
+        var edge = layout.edges[e];
+        var si = nodeIndex(layout, edge.source);
+        var ti = nodeIndex(layout, edge.target);
+        if (si < 0 || ti < 0) continue;
+        if (!edge.points || edge.points.length < 2) continue;
+
+        var p1 = edge.points[0], p2 = edge.points[edge.points.length - 1];
+        var waypoints = [p1];
+        for (var n = 0; n < layout.nodes.length; n++) {
+          if (n === si || n === ti) continue;
+          var node = layout.nodes[n];
+          var blocked = lineIntersectsRect(
+            p1.x, p1.y, p2.x, p2.y,
+            node.x - node.w/2 - padding, node.y - node.h/2 - padding,
+            node.w + 2 * padding, node.h + 2 * padding
+          );
+          if (blocked) {
+            waypoints.push({ x: node.x + node.w/2 + padding + 20, y: node.y });
+          }
+        }
+        waypoints.push(p2);
+        edge.points = waypoints;
+      }
+      return layout;
+    }
+
+    function lineIntersectsRect(x1, y1, x2, y2, rx, ry, rw, rh) {
+      var dx = x2 - x1, dy = y2 - y1;
+      var p = [-dx, dx, -dy, dy];
+      var q = [x1 - rx, rx + rw - x1, y1 - ry, ry + rh - y1];
+      var u1 = 0, u2 = 1;
+      for (var i = 0; i < 4; i++) {
+        if (p[i] === 0) {
+          if (q[i] < 0) return false;
+          continue;
+        }
+        var t = q[i] / p[i];
+        if (p[i] < 0) {
+          if (t > u2) return false;
+          if (t > u1) u1 = t;
+        } else {
+          if (t < u1) return false;
+          if (t < u2) u2 = t;
+        }
+      }
+      return u1 <= u2;
+    }
+
+    function renderSVG(layout, opts) {
+      opts = opts || {};
+      var width            = opts.width            || 0;
+      var height           = opts.height           || 0;
+      var nodeFill         = opts.nodeFill         || 'var(--white)';
+      var nodeStroke       = opts.nodeStroke       || 'var(--gray-700)';
+      var edgeStroke       = opts.edgeStroke       || 'var(--gray-500)';
+      var nodeStrokeWidth  = opts.nodeStrokeWidth  || 1.5;
+      var edgeStrokeWidth  = opts.edgeStrokeWidth  || 1.5;
+      var fontSize         = opts.fontSize         || 11;
+      var showLabels       = opts.showLabels !== false;
+      var nodeRadius       = opts.nodeRadius       || 6;
+      var activeEdge       = opts.activeEdge       || -1;
+
+      var colors = ['var(--clay)', 'var(--olive)', 'var(--slate)', 'var(--rust)', 'var(--info)'];
+
+      var maxX = 0, maxY = 0;
+      for (var i = 0; i < layout.nodes.length; i++) {
+        var n = layout.nodes[i];
+        maxX = Math.max(maxX, n.x + n.w/2 + 20);
+        maxY = Math.max(maxY, n.y + n.h/2 + 20);
+      }
+      for (var e = 0; e < layout.edges.length; e++) {
+        var pts = layout.edges[e].points;
+        if (!pts) continue;
+        for (var p = 0; p < pts.length; p++) {
+          maxX = Math.max(maxX, pts[p].x + 10);
+          maxY = Math.max(maxY, pts[p].y + 10);
+        }
+      }
+      if (!width)  width  = Math.max(400, Math.ceil(maxX));
+      if (!height) height = Math.max(300, Math.ceil(maxY));
+
+      var parts = [];
+      parts.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + width + ' ' + height + '" style="width:100%;height:auto;">');
+
+      for (var e = 0; e < layout.edges.length; e++) {
+        var edge = layout.edges[e];
+        var pts = edge.points;
+        if (!pts || pts.length < 2) continue;
+
+        var strokeColor = (e === activeEdge) ? (opts.activeStroke || 'var(--clay)') : edgeStroke;
+        var strokeW = (e === activeEdge) ? (edgeStrokeWidth * 1.5) : edgeStrokeWidth;
+
+        if (pts.length === 2) {
+          parts.push('<line x1="' + fmt(pts[0].x) + '" y1="' + fmt(pts[0].y) + '" x2="' + fmt(pts[1].x) + '" y2="' + fmt(pts[1].y) + '" class="ln" stroke="' + strokeColor + '" stroke-width="' + strokeW + '" stroke-linecap="round"/>');
+        } else if (pts.length === 3) {
+          parts.push('<polyline points="' + fmt(pts[0].x) + ',' + fmt(pts[0].y) + ' ' + fmt(pts[1].x) + ',' + fmt(pts[1].y) + ' ' + fmt(pts[2].x) + ',' + fmt(pts[2].y) + '" class="ln" stroke="' + strokeColor + '" stroke-width="' + strokeW + '" fill="none" stroke-linecap="round" stroke-linejoin="round"/>');
+        } else if (pts.length === 4) {
+          parts.push('<path d="M' + fmt(pts[0].x) + ',' + fmt(pts[0].y) + ' C' + fmt(pts[1].x) + ',' + fmt(pts[1].y) + ' ' + fmt(pts[2].x) + ',' + fmt(pts[2].y) + ' ' + fmt(pts[3].x) + ',' + fmt(pts[3].y) + '" class="ln" stroke="' + strokeColor + '" stroke-width="' + strokeW + '" fill="none" stroke-linecap="round"/>');
+        } else {
+          var ps = [];
+          for (var p = 0; p < pts.length; p++) ps.push(fmt(pts[p].x) + ',' + fmt(pts[p].y));
+          parts.push('<polyline points="' + ps.join(' ') + '" class="ln" stroke="' + strokeColor + '" stroke-width="' + strokeW + '" fill="none" stroke-linecap="round" stroke-linejoin="round"/>');
+        }
+
+        if (edge.label) {
+          var midIdx = Math.floor(pts.length / 2);
+          var mx = pts[midIdx].x, my = pts[midIdx].y;
+          parts.push('<text x="' + fmt(mx) + '" y="' + fmt(my - 6) + '" text-anchor="middle" font-family="var(--mono)" font-size="' + (fontSize - 1) + 'px" fill="var(--gray-500)">' + escapeXml(edge.label) + '</text>');
+        }
+      }
+
+      for (var i = 0; i < layout.nodes.length; i++) {
+        var node = layout.nodes[i];
+        var fill = nodeFill;
+        if (nodeFill === 'var(--white)') fill = 'var(--white)';
+        var rx = node.x - node.w/2;
+        var ry = node.y - node.h/2;
+        var colorDot = colors[i % colors.length];
+
+        parts.push('<g>');
+        parts.push('<rect x="' + fmt(rx) + '" y="' + fmt(ry) + '" width="' + fmt(node.w) + '" height="' + fmt(node.h) + '" rx="' + nodeRadius + '" class="wh" fill="var(--white)" stroke="' + nodeStroke + '" stroke-width="' + nodeStrokeWidth + '"/>');
+        parts.push('<circle cx="' + fmt(rx + 12) + '" cy="' + fmt(node.y) + '" r="4" fill="' + colorDot + '"/>');
+
+        if (showLabels && node.label) {
+          var label = node.label.length > 24 ? node.label.substring(0, 22) + '...' : node.label;
+          parts.push('<text x="' + fmt(node.x) + '" y="' + fmt(node.y + 4) + '" text-anchor="middle" font-family="var(--mono)" font-size="' + fontSize + 'px" fill="var(--gray-700)">' + escapeXml(label) + '</text>');
+        }
+        parts.push('</g>');
+      }
+
+      parts.push('</svg>');
+      return parts.join('\n');
+    }
+
+    function fmt(n) {
+      return Math.round(n * 10) / 10;
+    }
+
+    function escapeXml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+    }
+
+    // =====================================================================
+    // Test harness
+    // =====================================================================
+
+    // Timer helper: high-resolution timing
+    function time(fn) {
+      var t0 = performance.now();
+      var result = fn();
+      var t1 = performance.now();
+      return { result: result, ms: Math.round((t1 - t0) * 1000) / 1000 };
+    }
+
+    // Test definitions
+    var tests = [
+      {
+        title: 'Force-Directed',
+        desc: '8 nodes, 12 edges. Fruchterman-Reingold with orthogonal routing.',
+        graph: {
+          nodes: [
+            { id: 'a', label: 'Alpha' },
+            { id: 'b', label: 'Bravo' },
+            { id: 'c', label: 'Charlie' },
+            { id: 'd', label: 'Delta' },
+            { id: 'e', label: 'Echo' },
+            { id: 'f', label: 'Foxtrot' },
+            { id: 'g', label: 'Golf' },
+            { id: 'h', label: 'Hotel' }
+          ],
+          edges: [
+            { source: 'a', target: 'b' }, { source: 'a', target: 'c' },
+            { source: 'a', target: 'd' }, { source: 'b', target: 'e' },
+            { source: 'b', target: 'f' }, { source: 'c', target: 'g' },
+            { source: 'd', target: 'h' }, { source: 'e', target: 'f' },
+            { source: 'f', target: 'g' }, { source: 'g', target: 'h' },
+            { source: 'c', target: 'e' }, { source: 'd', target: 'f' }
+          ]
+        },
+        layoutFn: function(g) { return layoutForce(g, { width: 400, height: 280, seed: 42 }); },
+        routeFn: routeStraight
+      },
+      {
+        title: 'Sugiyama DAG',
+        desc: '6 nodes, 7 edges. Longest-path layers with straight routing.',
+        graph: {
+          nodes: [
+            { id: 'a', label: 'Start' },
+            { id: 'b', label: 'Plan' },
+            { id: 'c', label: 'Design' },
+            { id: 'd', label: 'Build' },
+            { id: 'e', label: 'Test' },
+            { id: 'f', label: 'Ship' }
+          ],
+          edges: [
+            { source: 'a', target: 'b' }, { source: 'a', target: 'c' },
+            { source: 'b', target: 'd' }, { source: 'c', target: 'd' },
+            { source: 'c', target: 'e' }, { source: 'd', target: 'f' },
+            { source: 'e', target: 'f' }
+          ]
+        },
+        layoutFn: function(g) { return layoutSugiyama(g, { layerSpacing: 70, nodeSpacing: 50 }); },
+        routeFn: routeStraight
+      },
+      {
+        title: 'Circular',
+        desc: '8 nodes, 10 edges. Greedy crossing-minimized circle with straight routing.',
+        graph: {
+          nodes: [
+            { id: 'a', label: 'Ingest' },
+            { id: 'b', label: 'Parse' },
+            { id: 'c', label: 'Validate' },
+            { id: 'd', label: 'Transform' },
+            { id: 'e', label: 'Enrich' },
+            { id: 'f', label: 'Aggregate' },
+            { id: 'g', label: 'Store' },
+            { id: 'h', label: 'Notify' }
+          ],
+          edges: [
+            { source: 'a', target: 'b' }, { source: 'b', target: 'c' },
+            { source: 'c', target: 'd' }, { source: 'd', target: 'e' },
+            { source: 'e', target: 'f' }, { source: 'f', target: 'g' },
+            { source: 'g', target: 'h' }, { source: 'b', target: 'd' },
+            { source: 'd', target: 'g' }, { source: 'e', target: 'h' }
+          ]
+        },
+        layoutFn: function(g) { return layoutCircular(g, { width: 360, height: 280, radius: 110 }); },
+        routeFn: routeStraight
+      },
+      {
+        title: 'Tree',
+        desc: '6 nodes, 5 edges. BFS-expand with children centered under parent.',
+        graph: {
+          nodes: [
+            { id: 'r', label: 'Root' },
+            { id: 'a', label: 'Child-A' },
+            { id: 'b', label: 'Child-B' },
+            { id: 'a1', label: 'Leaf-A1' },
+            { id: 'a2', label: 'Leaf-A2' },
+            { id: 'b1', label: 'Leaf-B1' }
+          ],
+          edges: [
+            { source: 'r', target: 'a' }, { source: 'r', target: 'b' },
+            { source: 'a', target: 'a1' }, { source: 'a', target: 'a2' },
+            { source: 'b', target: 'b1' }
+          ]
+        },
+        layoutFn: function(g) { return layoutTree(g, { hSpacing: 60, vSpacing: 70 }); },
+        routeFn: routeStraight
+      },
+      {
+        title: 'Grid',
+        desc: '6 nodes, 5 edges. Row-column grid with straight routing.',
+        graph: {
+          nodes: [
+            { id: 'a', label: 'Module-A' },
+            { id: 'b', label: 'Module-B' },
+            { id: 'c', label: 'Module-C' },
+            { id: 'd', label: 'Module-D' },
+            { id: 'e', label: 'Module-E' },
+            { id: 'f', label: 'Module-F' }
+          ],
+          edges: [
+            { source: 'a', target: 'b' }, { source: 'b', target: 'c' },
+            { source: 'd', target: 'e' }, { source: 'a', target: 'd' },
+            { source: 'c', target: 'f' }
+          ]
+        },
+        layoutFn: function(g) { return layoutGrid(g, { columns: 3, cellW: 120, cellH: 80 }); },
+        routeFn: routeStraight
+      }
+    ];
+
+    // Run all tests
+    var results = [];
+    var totalTime = 0;
+    var totalNodes = 0;
+    var totalEdges = 0;
+
+    tests.forEach(function(test) {
+      var graph = test.graph;
+      var nNodes = graph.nodes.length;
+      var nEdges = graph.edges.length;
+      totalNodes += nNodes;
+      totalEdges += nEdges;
+
+      var layoutResult, routeResult, svg;
+      var layoutTime = 0, routeTime = 0, svgTime = 0;
+
+      // Layout
+      var l = time(function() { return test.layoutFn(graph); });
+      layoutResult = l.result;
+      layoutTime = l.ms;
+
+      // Route
+      var r = time(function() { test.routeFn(layoutResult); });
+      routeResult = r.result;
+      routeTime = r.ms;
+
+      // Render
+      var s = time(function() { return renderSVG(routeResult); });
+      svg = s.result;
+      svgTime = s.ms;
+
+      var total = layoutTime + routeTime + svgTime;
+      totalTime += total;
+
+      results.push({
+        title: test.title,
+        desc: test.desc,
+        nodes: nNodes,
+        edges: nEdges,
+        layoutTime: layoutTime,
+        routeTime: routeTime,
+        svgTime: svgTime,
+        totalTime: total,
+        svg: svg
+      });
+    });
+
+    // Render summary bar
+    var summaryEl = document.getElementById('summary');
+    var totalTimeMs = totalTime.toFixed(3);
+    var avgTimeMs = (totalTime / tests.length).toFixed(3);
+
+    function summaryCard(label, value, extraClass) {
+      return '<div class="summary-card">' +
+        '<div class="label">' + label + '</div>' +
+        '<div class="' + (extraClass || 'value') + '">' + value + '</div>' +
+        '</div>';
+    }
+
+    summaryEl.innerHTML =
+      summaryCard('Algorithms', tests.length, 'value') +
+      summaryCard('Total Nodes', totalNodes, 'value') +
+      summaryCard('Total Edges', totalEdges, 'value') +
+      summaryCard('Total Time', totalTimeMs + ' ms', 'time') +
+      summaryCard('Avg Time', avgTimeMs + ' ms', 'time');
+
+    // Render test grid
+    var gridEl = document.getElementById('test-grid');
+
+    results.forEach(function(r) {
+      var card = document.createElement('div');
+      card.className = 'test-card';
+      card.innerHTML =
+        '<h3>' + escapeXml(r.title) + '</h3>' +
+        '<div class="svg-wrap">' + r.svg + '</div>' +
+        '<div class="metrics">' +
+          '<div class="metric-item"><div class="metric-label">Render</div><div class="metric-value metric-val--time">' + r.totalTime.toFixed(3) + ' ms</div></div>' +
+          '<div class="metric-item"><div class="metric-label">Nodes</div><div class="metric-value metric-val--nodes">' + r.nodes + '</div></div>' +
+          '<div class="metric-item"><div class="metric-label">Edges</div><div class="metric-value metric-val--edges">' + r.edges + '</div></div>' +
+        '</div>';
+      gridEl.appendChild(card);
+    });
+  </script>
+</body>
+</html>
