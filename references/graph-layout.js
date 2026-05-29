@@ -243,3 +243,272 @@ function nodeIndex(layout, id) {
   }
   return -1;
 }
+
+// ---- Sugiyama (Hierarchical Layer-based) Layout ----------------------------
+
+/**
+ * layoutSugiyama(graph, opts) — Place DAG nodes in horizontal layers.
+ * 1. Assign layers via longest-path algorithm from sources
+ * 2. Barycenter heuristic to reduce crossings between adjacent layers
+ * 3. Assign x coordinates with even spacing
+ *
+ * Options: orientation ("TB"=top-bottom), layerSpacing (80), nodeSpacing (60)
+ */
+function layoutSugiyama(graph, opts) {
+  opts = opts || {};
+  var orientation  = opts.orientation  || 'TB';
+  var layerSpacing = opts.layerSpacing || 80;
+  var nodeSpacing  = opts.nodeSpacing  || 60;
+
+  var g = cloneGraph(graph);
+  var n = g.nodes.length;
+  if (n === 0) return g;
+
+  // Build adjacency and in-degree
+  var adj = {}, indeg = {};
+  for (var i = 0; i < n; i++) { adj[g.nodes[i].id] = []; indeg[g.nodes[i].id] = 0; }
+  for (var e = 0; e < g.edges.length; e++) {
+    var src = g.edges[e].source, tgt = g.edges[e].target;
+    if (adj[src]) adj[src].push(tgt);
+    indeg[tgt] = (indeg[tgt] || 0) + 1;
+  }
+
+  // Step 1: Layer assignment (longest-path from sources)
+  var layer = {};
+  var queue = [];
+  for (var id in indeg) {
+    if (indeg[id] === 0) { layer[id] = 0; queue.push(id); }
+  }
+  // If no sources (all cyclic), assign all to layer 0
+  if (queue.length === 0) {
+    for (var id in indeg) { layer[id] = 0; queue.push(id); }
+  }
+  while (queue.length > 0) {
+    var u = queue.shift();
+    var neighbors = adj[u] || [];
+    for (var j = 0; j < neighbors.length; j++) {
+      var v = neighbors[j];
+      var newLayer = layer[u] + 1;
+      if (layer[v] === undefined || newLayer > layer[v]) {
+        layer[v] = newLayer;
+      }
+      indeg[v]--;
+      if (indeg[v] === 0) queue.push(v);
+    }
+  }
+  // Handle unreachable nodes
+  for (var id in indeg) {
+    if (layer[id] === undefined) layer[id] = 0;
+  }
+
+  // Step 2: Group nodes by layer
+  var layers = [];
+  for (var i = 0; i < n; i++) {
+    var l = layer[g.nodes[i].id];
+    if (!layers[l]) layers[l] = [];
+    layers[l].push(i);
+  }
+
+  // Step 3: Barycenter heuristic — sweep left-to-right and right-to-left
+  var positions = {};
+  for (var l = 0; l < layers.length; l++) {
+    for (var k = 0; k < layers[l].length; k++) {
+      positions[layers[l][k]] = k;
+    }
+  }
+  for (var sweep = 0; sweep < 3; sweep++) {
+    for (var l = 1; l < layers.length; l++) {
+      for (var k = 0; k < layers[l].length; k++) {
+        var ni = layers[l][k];
+        var nd = g.nodes[ni];
+        var sumAbove = 0, count = 0;
+        for (var e = 0; e < g.edges.length; e++) {
+          if (g.edges[e].target === nd.id) {
+            var si = nodeIndex(g, g.edges[e].source);
+            if (si >= 0 && positions[si] !== undefined) { sumAbove += positions[si]; count++; }
+          }
+        }
+        if (count > 0) positions[ni] = sumAbove / count;
+      }
+      layers[l].sort(function(a, b) { return (positions[a] || 0) - (positions[b] || 0); });
+      for (var k = 0; k < layers[l].length; k++) positions[layers[l][k]] = k;
+    }
+  }
+
+  // Step 4: Assign coordinates
+  var maxLayerLen = 0;
+  for (var l = 0; l < layers.length; l++) maxLayerLen = Math.max(maxLayerLen, layers[l].length);
+
+  for (var l = 0; l < layers.length; l++) {
+    var rowLen = layers[l].length;
+    var startX = (maxLayerLen - rowLen) * nodeSpacing / 2;
+    for (var k = 0; k < rowLen; k++) {
+      var ni = layers[l][k];
+      g.nodes[ni].x = startX + k * nodeSpacing + nodeSpacing / 2;
+      g.nodes[ni].y = l * layerSpacing + DEFAULT_NODE_H / 2 + 20;
+    }
+  }
+
+  for (var e = 0; e < g.edges.length; e++) g.edges[e].points = [];
+  return g;
+}
+
+// ---- Circular Layout --------------------------------------------------------
+
+/**
+ * layoutCircular(graph, opts) — Place nodes evenly on a circle.
+ * Uses greedy edge-crossing minimization to order nodes around the circle.
+ *
+ * Options: width (600), height (600), radius (auto), cx (auto), cy (auto)
+ */
+function layoutCircular(graph, opts) {
+  opts = opts || {};
+  var cw     = opts.width  || 600;
+  var ch     = opts.height || 600;
+  var radius = opts.radius || Math.min(cw, ch) * 0.4;
+  var cx     = opts.cx || cw / 2;
+  var cy     = opts.cy || ch / 2;
+
+  var g = cloneGraph(graph);
+  var n = g.nodes.length;
+  if (n === 0) return g;
+
+  // Greedy crossing minimization: insert nodes one at a time at best position
+  var order = [0];
+  for (var i = 1; i < n; i++) {
+    var bestPos = 0, bestCross = Infinity;
+    for (var pos = 0; pos <= order.length; pos++) {
+      var test = order.slice(0, pos).concat([i]).concat(order.slice(pos));
+      var cross = countCrossingsCircular(g, test);
+      if (cross < bestCross) { bestCross = cross; bestPos = pos; }
+    }
+    order = order.slice(0, bestPos).concat([i]).concat(order.slice(bestPos));
+  }
+
+  // Place on circle, starting from top (-PI/2)
+  for (var k = 0; k < n; k++) {
+    var angle = (2 * Math.PI * k / n) - Math.PI / 2;
+    g.nodes[order[k]].x = cx + Math.cos(angle) * radius;
+    g.nodes[order[k]].y = cy + Math.sin(angle) * radius;
+  }
+
+  for (var e = 0; e < g.edges.length; e++) g.edges[e].points = [];
+  return g;
+}
+
+/** Count edge crossings for a given circular node ordering */
+function countCrossingsCircular(graph, order) {
+  var n = order.length;
+  var pos = {};
+  for (var i = 0; i < n; i++) pos[graph.nodes[order[i]].id] = i;
+  var cross = 0;
+  for (var a = 0; a < graph.edges.length; a++) {
+    for (var b = a + 1; b < graph.edges.length; b++) {
+      var e1 = graph.edges[a], e2 = graph.edges[b];
+      var s1 = pos[e1.source], t1 = pos[e1.target];
+      var s2 = pos[e2.source], t2 = pos[e2.target];
+      if (s1 === undefined || t1 === undefined || s2 === undefined || t2 === undefined) continue;
+      if (s1 > t1) { var tmp = s1; s1 = t1; t1 = tmp; }
+      if (s2 > t2) { var tmp = s2; s2 = t2; t2 = tmp; }
+      if ((s1 < s2 && s2 < t1 && t1 < t2) || (s2 < s1 && s1 < t2 && t2 < t1)) cross++;
+    }
+  }
+  return cross;
+}
+
+// ---- Tree Layout ------------------------------------------------------------
+
+/**
+ * layoutTree(graph, opts) — BFS-expand tree from root. Children centered under parent.
+ * First node without incoming edges is root. If cycles, uses first node.
+ *
+ * Options: hSpacing (80), vSpacing (80), orientation ("TB")
+ */
+function layoutTree(graph, opts) {
+  opts = opts || {};
+  var hSpacing = opts.hSpacing || 80;
+  var vSpacing = opts.vSpacing || 80;
+
+  var g = cloneGraph(graph);
+  var n = g.nodes.length;
+  if (n === 0) return g;
+
+  // Find root: node with no incoming edges
+  var hasParent = {};
+  for (var i = 0; i < n; i++) hasParent[g.nodes[i].id] = false;
+  for (var e = 0; e < g.edges.length; e++) hasParent[g.edges[e].target] = true;
+  var rootId = g.nodes[0].id;
+  for (var id in hasParent) { if (!hasParent[id]) { rootId = id; break; } }
+
+  // Build children map
+  var children = {};
+  for (var i = 0; i < n; i++) children[g.nodes[i].id] = [];
+  for (var e = 0; e < g.edges.length; e++) {
+    if (children[g.edges[e].source]) children[g.edges[e].source].push(g.edges[e].target);
+  }
+
+  // BFS with depth
+  var levels = [];
+  var depth = {};
+  var queue = [rootId];
+  depth[rootId] = 0;
+  var visited = {};
+  visited[rootId] = true;
+  while (queue.length > 0) {
+    var u = queue.shift();
+    var d = depth[u];
+    if (!levels[d]) levels[d] = [];
+    levels[d].push(u);
+    var kids = children[u] || [];
+    for (var j = 0; j < kids.length; j++) {
+      var v = kids[j];
+      if (!visited[v]) { visited[v] = true; depth[v] = d + 1; queue.push(v); }
+    }
+  }
+
+  // Even spacing within each level
+  var maxLevelLen = 0;
+  for (var d = 0; d < levels.length; d++) maxLevelLen = Math.max(maxLevelLen, (levels[d] || []).length);
+
+  for (var d = 0; d < levels.length; d++) {
+    var row = levels[d] || [];
+    var startX = (maxLevelLen - row.length) * hSpacing / 2;
+    for (var k = 0; k < row.length; k++) {
+      var ni = nodeIndex(g, row[k]);
+      if (ni >= 0) {
+        g.nodes[ni].x = startX + k * hSpacing + hSpacing / 2;
+        g.nodes[ni].y = d * vSpacing + DEFAULT_NODE_H / 2 + 20;
+      }
+    }
+  }
+
+  for (var e = 0; e < g.edges.length; e++) g.edges[e].points = [];
+  return g;
+}
+
+// ---- Grid Layout ------------------------------------------------------------
+
+/**
+ * layoutGrid(graph, opts) — Arrange nodes in a row-column grid.
+ *
+ * Options: columns (4), cellW (150), cellH (100), startX (20), startY (20)
+ */
+function layoutGrid(graph, opts) {
+  opts = opts || {};
+  var cols   = opts.columns || 4;
+  var cellW  = opts.cellW || 150;
+  var cellH  = opts.cellH || 100;
+  var startX = opts.startX || 20;
+  var startY = opts.startY || 20;
+
+  var g = cloneGraph(graph);
+  for (var i = 0; i < g.nodes.length; i++) {
+    var col = i % cols;
+    var row = Math.floor(i / cols);
+    g.nodes[i].x = startX + col * cellW + cellW / 2;
+    g.nodes[i].y = startY + row * cellH + DEFAULT_NODE_H / 2;
+  }
+
+  for (var e = 0; e < g.edges.length; e++) g.edges[e].points = [];
+  return g;
+}
