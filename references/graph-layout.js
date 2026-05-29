@@ -309,7 +309,7 @@ function layoutSugiyama(graph, opts) {
     layers[l].push(i);
   }
 
-  // Step 3: Barycenter heuristic — sweep left-to-right and right-to-left
+  // Step 3: Barycenter heuristic — 3 sweeps downward through layers.
   var positions = {};
   for (var l = 0; l < layers.length; l++) {
     for (var k = 0; k < layers[l].length; k++) {
@@ -450,11 +450,9 @@ function layoutTree(graph, opts) {
 
   // BFS to get depth and parent info
   var depth = {};
-  var parent = {};
   var order = [];  // nodes in BFS order
   var queue = [rootId];
   depth[rootId] = 0;
-  parent[rootId] = null;
   var visited = {};
   visited[rootId] = true;
   while (queue.length > 0) {
@@ -463,7 +461,7 @@ function layoutTree(graph, opts) {
     var kids = children[u] || [];
     for (var j = 0; j < kids.length; j++) {
       var v = kids[j];
-      if (!visited[v]) { visited[v] = true; depth[v] = depth[u] + 1; parent[v] = u; queue.push(v); }
+      if (!visited[v]) { visited[v] = true; depth[v] = depth[u] + 1; queue.push(v); }
     }
   }
 
@@ -577,7 +575,6 @@ function routeStraight(layout) {
  */
 function routeOrthogonal(layout, opts) {
   opts = opts || {};
-  var cornerOffset = opts.cornerOffset || 20;
 
   for (var e = 0; e < layout.edges.length; e++) {
     var edge = layout.edges[e];
@@ -805,15 +802,13 @@ function renderSVG(layout, opts) {
   // Nodes on top
   for (var i = 0; i < layout.nodes.length; i++) {
     var node = layout.nodes[i];
-    var fill = nodeFill;
-    if (nodeFill === 'var(--white)') fill = 'var(--white)';
     var rx = node.x - node.w/2;
     var ry = node.y - node.h/2;
     var colorDot = colors[i % colors.length];
 
     parts.push('<g>');
     // Node rectangle
-    parts.push('<rect x="' + fmt(rx) + '" y="' + fmt(ry) + '" width="' + fmt(node.w) + '" height="' + fmt(node.h) + '" rx="' + nodeRadius + '" class="wh" fill="var(--white)" stroke="' + nodeStroke + '" stroke-width="' + nodeStrokeWidth + '"/>');
+    parts.push('<rect x="' + fmt(rx) + '" y="' + fmt(ry) + '" width="' + fmt(node.w) + '" height="' + fmt(node.h) + '" rx="' + nodeRadius + '" class="wh" fill="' + nodeFill + '" stroke="' + nodeStroke + '" stroke-width="' + nodeStrokeWidth + '"/>');
     // Color indicator dot (left side)
     parts.push('<circle cx="' + fmt(rx + 12) + '" cy="' + fmt(node.y) + '" r="4" fill="' + colorDot + '"/>');
 
