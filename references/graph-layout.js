@@ -428,6 +428,7 @@ function layoutTree(graph, opts) {
   opts = opts || {};
   var hSpacing = opts.hSpacing || 80;
   var vSpacing = opts.vSpacing || 80;
+  var orientation = opts.orientation || 'TB';
 
   var g = cloneGraph(graph);
   var n = g.nodes.length;
@@ -447,39 +448,75 @@ function layoutTree(graph, opts) {
     if (children[g.edges[e].source]) children[g.edges[e].source].push(g.edges[e].target);
   }
 
-  // BFS with depth
-  var levels = [];
+  // BFS to get depth and parent info
   var depth = {};
+  var parent = {};
+  var order = [];  // nodes in BFS order
   var queue = [rootId];
   depth[rootId] = 0;
+  parent[rootId] = null;
   var visited = {};
   visited[rootId] = true;
   while (queue.length > 0) {
     var u = queue.shift();
-    var d = depth[u];
-    if (!levels[d]) levels[d] = [];
-    levels[d].push(u);
+    order.push(u);
     var kids = children[u] || [];
     for (var j = 0; j < kids.length; j++) {
       var v = kids[j];
-      if (!visited[v]) { visited[v] = true; depth[v] = d + 1; queue.push(v); }
+      if (!visited[v]) { visited[v] = true; depth[v] = depth[u] + 1; parent[v] = u; queue.push(v); }
     }
   }
 
-  // Even spacing within each level
-  var maxLevelLen = 0;
-  for (var d = 0; d < levels.length; d++) maxLevelLen = Math.max(maxLevelLen, (levels[d] || []).length);
-
-  for (var d = 0; d < levels.length; d++) {
-    var row = levels[d] || [];
-    var startX = (maxLevelLen - row.length) * hSpacing / 2;
-    for (var k = 0; k < row.length; k++) {
-      var ni = nodeIndex(g, row[k]);
-      if (ni >= 0) {
-        g.nodes[ni].x = startX + k * hSpacing + hSpacing / 2;
-        g.nodes[ni].y = d * vSpacing + DEFAULT_NODE_H / 2 + 20;
-      }
+  // Compute subtree leaf count for each node (bottom-up, reversed BFS order)
+  var subtreeLeaves = {};
+  for (var i = order.length - 1; i >= 0; i--) {
+    var id = order[i];
+    var kids = children[id] || [];
+    if (kids.length === 0) {
+      subtreeLeaves[id] = 1;  // leaf
+    } else {
+      var sum = 0;
+      for (var j = 0; j < kids.length; j++) sum += (subtreeLeaves[kids[j]] || 1);
+      subtreeLeaves[id] = sum;
     }
+  }
+
+  // Position nodes top-down: each parent centered over its children
+  var xPos = {};
+  // Calculate total width for root's subtree to initialize root at center
+  var rootLeaves = subtreeLeaves[rootId] || 1;
+  var totalWidth = rootLeaves * hSpacing;
+  function assignPositions(nodeId, left, right) {
+    xPos[nodeId] = (left + right) / 2;
+    var kids = children[nodeId] || [];
+    if (kids.length === 0) return;
+    var totalLeaves = subtreeLeaves[nodeId];
+    var width = right - left;
+    var cursor = left;
+    for (var j = 0; j < kids.length; j++) {
+      var childLeaves = subtreeLeaves[kids[j]] || 1;
+      var childWidth = width * childLeaves / totalLeaves;
+      assignPositions(kids[j], cursor, cursor + childWidth);
+      cursor += childWidth;
+    }
+  }
+  assignPositions(rootId, -totalWidth / 2, totalWidth / 2);
+
+  // Apply positions relative to root center
+  for (var i = 0; i < n; i++) {
+    var ni = nodeIndex(g, order[i]);
+    if (ni >= 0) {
+      g.nodes[ni].x = (xPos[order[i]] || 0);
+      g.nodes[ni].y = (depth[order[i]] || 0) * vSpacing + DEFAULT_NODE_H / 2 + 20;
+    }
+  }
+
+  // Find the min x to shift everything positive
+  var minX = Infinity;
+  for (var i = 0; i < n; i++) minX = Math.min(minX, g.nodes[i].x);
+  if (minX < 0) {
+    var offset = -minX + 40;
+    for (var i = 0; i < n; i++) g.nodes[i].x += offset;
   }
 
   for (var e = 0; e < g.edges.length; e++) g.edges[e].points = [];
