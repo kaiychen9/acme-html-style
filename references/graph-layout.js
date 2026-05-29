@@ -709,3 +709,131 @@ function lineIntersectsRect(x1, y1, x2, y2, rx, ry, rw, rh) {
   }
   return u1 <= u2;
 }
+
+// ---- SVG Rendering ----------------------------------------------------------
+
+/**
+ * renderSVG(layout, opts) — Produce an SVG string for the layout.
+ * Uses Acme design token CSS variables for colors.
+ * Output is an inline <svg> block ready for innerHTML.
+ *
+ * Options:
+ *   width, height        — SVG viewBox dimensions (default: auto-fit content)
+ *   nodeFill             — CSS color for node fill (default: "var(--white)")
+ *   nodeStroke           — CSS color for node border (default: "var(--gray-700)")
+ *   edgeStroke           — CSS color for edge lines (default: "var(--gray-500)")
+ *   nodeStrokeWidth      — node border width in px (default: 1.5)
+ *   edgeStrokeWidth      — edge line width in px (default: 1.5)
+ *   fontSize             — label font size in px (default: 11)
+ *   showLabels           — show/hide node labels (default: true)
+ *   nodeRadius           — node corner radius in px (default: 6)
+ *   activeEdge           — edge index to highlight (default: -1)
+ *   activeStroke         — highlight edge color (default: "var(--clay)")
+ */
+function renderSVG(layout, opts) {
+  opts = opts || {};
+  var width            = opts.width            || 0;
+  var height           = opts.height           || 0;
+  var nodeFill         = opts.nodeFill         || 'var(--white)';
+  var nodeStroke       = opts.nodeStroke       || 'var(--gray-700)';
+  var edgeStroke       = opts.edgeStroke       || 'var(--gray-500)';
+  var nodeStrokeWidth  = opts.nodeStrokeWidth  || 1.5;
+  var edgeStrokeWidth  = opts.edgeStrokeWidth  || 1.5;
+  var fontSize         = opts.fontSize         || 11;
+  var showLabels       = opts.showLabels !== false;
+  var nodeRadius       = opts.nodeRadius       || 6;
+  var activeEdge       = opts.activeEdge       || -1;
+
+  // Acme color palette for node fills (cycling)
+  var colors = ['var(--clay)', 'var(--olive)', 'var(--slate)', 'var(--rust)', 'var(--info)'];
+
+  // Auto-size if not specified
+  var maxX = 0, maxY = 0;
+  for (var i = 0; i < layout.nodes.length; i++) {
+    var n = layout.nodes[i];
+    maxX = Math.max(maxX, n.x + n.w/2 + 20);
+    maxY = Math.max(maxY, n.y + n.h/2 + 20);
+  }
+  // Also check edge points
+  for (var e = 0; e < layout.edges.length; e++) {
+    var pts = layout.edges[e].points;
+    if (!pts) continue;
+    for (var p = 0; p < pts.length; p++) {
+      maxX = Math.max(maxX, pts[p].x + 10);
+      maxY = Math.max(maxY, pts[p].y + 10);
+    }
+  }
+  if (!width)  width  = Math.max(400, Math.ceil(maxX));
+  if (!height) height = Math.max(300, Math.ceil(maxY));
+
+  var parts = [];
+  parts.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + width + ' ' + height + '" style="width:100%;height:auto;">');
+
+  // Edges first (behind nodes)
+  for (var e = 0; e < layout.edges.length; e++) {
+    var edge = layout.edges[e];
+    var pts = edge.points;
+    if (!pts || pts.length < 2) continue;
+
+    var strokeColor = (e === activeEdge) ? (opts.activeStroke || 'var(--clay)') : edgeStroke;
+    var strokeW = (e === activeEdge) ? (edgeStrokeWidth * 1.5) : edgeStrokeWidth;
+
+    if (pts.length === 2) {
+      // Straight line
+      parts.push('<line x1="' + fmt(pts[0].x) + '" y1="' + fmt(pts[0].y) + '" x2="' + fmt(pts[1].x) + '" y2="' + fmt(pts[1].y) + '" class="ln" stroke="' + strokeColor + '" stroke-width="' + strokeW + '" stroke-linecap="round"/>');
+    } else if (pts.length === 3) {
+      // Orthogonal polyline (L-shaped)
+      parts.push('<polyline points="' + fmt(pts[0].x) + ',' + fmt(pts[0].y) + ' ' + fmt(pts[1].x) + ',' + fmt(pts[1].y) + ' ' + fmt(pts[2].x) + ',' + fmt(pts[2].y) + '" class="ln" stroke="' + strokeColor + '" stroke-width="' + strokeW + '" fill="none" stroke-linecap="round" stroke-linejoin="round"/>');
+    } else if (pts.length === 4) {
+      // Cubic bezier
+      parts.push('<path d="M' + fmt(pts[0].x) + ',' + fmt(pts[0].y) + ' C' + fmt(pts[1].x) + ',' + fmt(pts[1].y) + ' ' + fmt(pts[2].x) + ',' + fmt(pts[2].y) + ' ' + fmt(pts[3].x) + ',' + fmt(pts[3].y) + '" class="ln" stroke="' + strokeColor + '" stroke-width="' + strokeW + '" fill="none" stroke-linecap="round"/>');
+    } else {
+      // Multi-segment polyline
+      var ps = [];
+      for (var p = 0; p < pts.length; p++) ps.push(fmt(pts[p].x) + ',' + fmt(pts[p].y));
+      parts.push('<polyline points="' + ps.join(' ') + '" class="ln" stroke="' + strokeColor + '" stroke-width="' + strokeW + '" fill="none" stroke-linecap="round" stroke-linejoin="round"/>');
+    }
+
+    // Edge label if present
+    if (edge.label) {
+      var midIdx = Math.floor(pts.length / 2);
+      var mx = pts[midIdx].x, my = pts[midIdx].y;
+      parts.push('<text x="' + fmt(mx) + '" y="' + fmt(my - 6) + '" text-anchor="middle" font-family="var(--mono)" font-size="' + (fontSize - 1) + 'px" fill="var(--gray-500)">' + escapeXml(edge.label) + '</text>');
+    }
+  }
+
+  // Nodes on top
+  for (var i = 0; i < layout.nodes.length; i++) {
+    var node = layout.nodes[i];
+    var fill = nodeFill;
+    if (nodeFill === 'var(--white)') fill = 'var(--white)';
+    var rx = node.x - node.w/2;
+    var ry = node.y - node.h/2;
+    var colorDot = colors[i % colors.length];
+
+    parts.push('<g>');
+    // Node rectangle
+    parts.push('<rect x="' + fmt(rx) + '" y="' + fmt(ry) + '" width="' + fmt(node.w) + '" height="' + fmt(node.h) + '" rx="' + nodeRadius + '" class="wh" fill="var(--white)" stroke="' + nodeStroke + '" stroke-width="' + nodeStrokeWidth + '"/>');
+    // Color indicator dot (left side)
+    parts.push('<circle cx="' + fmt(rx + 12) + '" cy="' + fmt(node.y) + '" r="4" fill="' + colorDot + '"/>');
+
+    if (showLabels && node.label) {
+      var label = node.label.length > 24 ? node.label.substring(0, 22) + '...' : node.label;
+      parts.push('<text x="' + fmt(node.x) + '" y="' + fmt(node.y + 4) + '" text-anchor="middle" font-family="var(--mono)" font-size="' + fontSize + 'px" fill="var(--gray-700)">' + escapeXml(label) + '</text>');
+    }
+    parts.push('</g>');
+  }
+
+  parts.push('</svg>');
+  return parts.join('\n');
+}
+
+/** Format a number to 1 decimal place for SVG attributes */
+function fmt(n) {
+  return Math.round(n * 10) / 10;
+}
+
+/** Escape XML special characters */
+function escapeXml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
