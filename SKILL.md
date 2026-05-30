@@ -44,6 +44,8 @@ When a user asks for any document that matches the trigger phrases:
 | Reference | When to Read |
 |---|---|
 | `references/scenario-guide.md` | **Always** — identifies which patterns to use |
+| `references/graph-layout.js` | When generating diagrams, flowcharts, or SVG graphs — contains layout algorithms and edge routing |
+| `references/graph-layout.md` | When you need the graph layout API reference — parameters, usage, and algorithm selection guide |
 | `references/design-tokens.md` | When you need exact color hex, font stack, or spacing values |
 | `references/component-catalog.md` | When you need button, badge, table, card, input, or other component CSS |
 | `references/layout-patterns.md` | When you need page shell, header, grid, section, or footer patterns |
@@ -131,7 +133,7 @@ Every document follows this skeleton:
 | 2 | Code Review & PRs | scenario-guide.md §2 | diff blocks, severity tags, comment bubbles, `<details>`, checklist |
 | 3 | Design System & Variants | scenario-guide.md §3 | color swatches, type scale, spacing ruler, component stages |
 | 4 | Prototyping | scenario-guide.md §4 | animation sandbox, easing panel, drag-and-drop, keyframe display |
-| 5 | Diagrams & Flowcharts | scenario-guide.md §5 | inline SVG, clickable nodes, legend, sticky sidebar |
+| 5 | Diagrams & Flowcharts | scenario-guide.md §5 | graph-layout.js, inline SVG, clickable nodes, legend, sticky sidebar |
 | 6 | Slide Decks | scenario-guide.md §6 | scroll-snap slides, IntersectionObserver, slide counter, invert slides |
 | 7 | Research & Explainers | scenario-guide.md §7 | TL;DR box, `<details>` steps, tabbed code, FAQ, glossary |
 | 8 | Reports (Status/Incident) | scenario-guide.md §8 | stat cards, highlights, shipped table, SVG chart, timeline, carryover |
